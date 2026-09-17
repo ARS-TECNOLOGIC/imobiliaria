@@ -21,5 +21,10 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        $this->call(SistemaLocacaoSeeder::class);
+        $this->call(FeriadosSeeder::class);
+        $this->call(SistemaLocacaoSeeder::class); // mantenha na ordem: feriados antes
     }
+
 }

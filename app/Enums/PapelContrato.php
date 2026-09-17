@@ -1,0 +1,13 @@
+<?php
+
+namespace App\Enums;
+
+enum PapelContrato: string
+{
+    case LOCADOR_TITULAR = 'LOCADOR_TITULAR';
+    case LOCADOR_CONJUGE = 'LOCADOR_CONJUGE';
+    case LOCATARIO_TITULAR = 'LOCATARIO_TITULAR';
+    case LOCATARIO_CONJUGE = 'LOCATARIO_CONJUGE';
+    case FIADOR_TITULAR = 'FIADOR_TITULAR';
+    case FIADOR_CONJUGE = 'FIADOR_CONJUGE';
+}
