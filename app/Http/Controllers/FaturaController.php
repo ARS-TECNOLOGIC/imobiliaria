@@ -19,8 +19,7 @@ class FaturaController extends Controller
     public function __construct(
         private CalculadoraDiasUteis $diasUteis,
         private CalculadoraRepasse $calculadoraRepasse,
-    ) {
-    }
+    ) {}
 
     public function index(): View
     {
@@ -129,6 +128,14 @@ class FaturaController extends Controller
         $dados = $request->validated();
         $contrato = Contrato::findOrFail($dados['contrato_id']);
         $isentoMulta = $request->boolean('isento_multa');
+
+        // Vencimento derivado: referência (mês X) + dia_vencimento do contrato → mês X+1
+        $referencia = Carbon::parse($dados['referencia'])->startOfMonth();
+        $dados['data_vencimento'] = $referencia
+            ->copy()
+            ->addMonth()
+            ->day(min($contrato->dia_vencimento, 28))
+            ->toDateString();
 
         $diasAtraso = $this->calcularDiasAtraso($dados);
         $multa = $isentoMulta ? 0.0 : $this->calcularMulta($contrato, $dados, $diasAtraso);

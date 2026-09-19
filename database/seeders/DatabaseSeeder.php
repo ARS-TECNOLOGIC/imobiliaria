@@ -22,9 +22,8 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        $this->call(SistemaLocacaoSeeder::class);
+        // $this->call(SistemaLocacaoSeeder::class);
         $this->call(FeriadosSeeder::class);
         $this->call(SistemaLocacaoSeeder::class); // mantenha na ordem: feriados antes
     }
-
 }

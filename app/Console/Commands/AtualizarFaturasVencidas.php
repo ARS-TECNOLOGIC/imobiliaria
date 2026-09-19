@@ -36,7 +36,9 @@ class AtualizarFaturasVencidas extends Command
 
                 $base = $fatura->valor_aluguel + $fatura->valor_condominio
                     + $fatura->valor_iptu + $fatura->valor_seguro;
-                $multa = round((float) $base * ((float) $fatura->contrato->multa_percentual / 100), 2);
+                $multa = $fatura->isento_multa
+                    ? 0.0
+                    : round((float) $base * ((float) $fatura->contrato->multa_percentual / 100), 2);
 
                 $eraAtrasado = $fatura->status_pagamento === StatusPagamento::ATRASADO;
 

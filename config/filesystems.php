@@ -38,6 +38,13 @@ return [
             'report' => false,
         ],
 
+        'privada' => [
+            'driver' => 'local',
+            'root' => storage_path('app/privada'),
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

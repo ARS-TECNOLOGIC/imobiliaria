@@ -17,7 +17,7 @@ class Fatura extends Model
         'contrato_id', 'referencia', 'data_vencimento', 'valor_aluguel', 'valor_condominio',
         'valor_iptu', 'parcela_iptu', 'valor_seguro', 'valor_taxa_extra', 'descricao_taxa_extra',
         'valor_desconto', 'descricao_desconto', 'valor_multa_juros', 'valor_pago', 'dias_atraso',
-        'status_pagamento', 'data_recebimento', 'banco_recebedor', 'descricao_boleto',
+        'isento_multa', 'status_pagamento', 'data_recebimento', 'banco_recebedor', 'descricao_boleto',
     ];
 
     protected $casts = [
@@ -33,6 +33,7 @@ class Fatura extends Model
         'valor_desconto' => 'decimal:2',
         'valor_multa_juros' => 'decimal:2',
         'valor_pago' => 'decimal:2',
+        'isento_multa' => 'boolean',
     ];
 
     public function contrato(): BelongsTo

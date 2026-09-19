@@ -1,15 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PessoaController;
-use App\Http\Controllers\ImovelController;
-use App\Http\Controllers\ImovelServicoCondominioController;
 use App\Http\Controllers\ContratoController;
 use App\Http\Controllers\ContratoParteController;
 use App\Http\Controllers\ContratoSeguroFiancaController;
+use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\FaturaController;
+use App\Http\Controllers\ImovelController;
+use App\Http\Controllers\ImovelServicoCondominioController;
+use App\Http\Controllers\PessoaController;
 use App\Http\Controllers\RepasseController;
-
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,3 +31,7 @@ Route::delete('contrato-seguros/{seguro}', [ContratoSeguroFiancaController::clas
 
 Route::resource('faturas', FaturaController::class);
 Route::put('repasses/{repasse}', [RepasseController::class, 'update'])->name('repasses.update');
+
+Route::post('documentos', [DocumentoController::class, 'store'])->name('documentos.store');
+Route::get('documentos/{documento}/download', [DocumentoController::class, 'download'])->name('documentos.download');
+Route::delete('documentos/{documento}', [DocumentoController::class, 'destroy'])->name('documentos.destroy');

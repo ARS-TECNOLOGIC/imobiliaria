@@ -41,4 +41,15 @@ class CalculadoraDiasUteis
 
         return $data;
     }
+
+    public function ultimoDiaUtil(Carbon $data): Carbon
+    {
+        $data = $data->copy();
+
+        while (! $this->isDiaUtil($data)) {
+            $data->subDay();
+        }
+
+        return $data;
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CategoriaArmazenamento;
 use App\Enums\Garantia;
 use App\Enums\PapelContrato;
 use App\Enums\StatusPagamento;
@@ -105,9 +106,10 @@ class SistemaLocacaoSeeder extends Seeder
             }
 
             // 7. Faturas dos últimos 4 meses, com status variado
+            // Regra: referência = mês X, vencimento = mês X+1 (dia_vencimento do contrato)
             for ($mesesAtras = 3; $mesesAtras >= 0; $mesesAtras--) {
                 $referencia = now()->copy()->subMonths($mesesAtras)->startOfMonth();
-                $dataVencimento = $referencia->copy()->day(min($contrato->dia_vencimento, 28));
+                $dataVencimento = $referencia->copy()->addMonth()->day(min($contrato->dia_vencimento, 28));
 
                 $estado = match (true) {
                     // No mês corrente, só marca "atrasada" se o vencimento já passou de verdade.
@@ -154,6 +156,7 @@ class SistemaLocacaoSeeder extends Seeder
                 'documentavel_type' => Contrato::class,
                 'documentavel_id' => $contrato->id,
                 'tipo_documento' => 'CONTRATO_ASSINADO',
+                'categoria_armazenamento' => CategoriaArmazenamento::DOCUMENTOS_ASSINADOS,
             ]);
         }
     }

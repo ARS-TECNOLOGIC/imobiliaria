@@ -18,7 +18,7 @@ class FaturaRequest extends FormRequest
         return [
             'contrato_id' => ['required', 'exists:contratos,id'],
             'referencia' => ['required', 'date'],
-            'data_vencimento' => ['required', 'date'],
+            'data_vencimento' => ['nullable', 'date'],
             'valor_aluguel' => ['required', 'numeric', 'min:0'],
             'valor_condominio' => ['nullable', 'numeric', 'min:0'],
             'valor_iptu' => ['nullable', 'numeric', 'min:0'],
@@ -31,6 +31,7 @@ class FaturaRequest extends FormRequest
             'valor_multa_juros' => ['nullable', 'numeric', 'min:0'],
             'valor_pago' => ['nullable', 'numeric', 'min:0'],
             'dias_atraso' => ['nullable', 'integer', 'min:0'],
+            'isento_multa' => ['nullable', 'boolean'],
             'status_pagamento' => ['required', Rule::enum(StatusPagamento::class)],
             'data_recebimento' => ['nullable', 'date'],
             'banco_recebedor' => ['nullable', 'string', 'max:100'],

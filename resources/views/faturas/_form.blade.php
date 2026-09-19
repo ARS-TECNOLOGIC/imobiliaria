@@ -13,11 +13,18 @@
         ? $contratoSelecionado->valor_condominio
         : 0;
 
-    // Dados que o JS da tela precisa pra recalcular multa/total/valor pago em
-    // tempo real, sem esperar o usuário salvar: percentuais de cada contrato
-    // e as datas de feriado (pra respeitar a regra de dia útil no preview).
+    // Dados para sugerir valores conforme o contrato e recalcular a prévia de
+    // multa, total e valor pago em tempo real, respeitando os feriados.
     $contratosInfo = $contratos->mapWithKeys(fn ($c) => [
-        $c->id => ['multa' => (float) $c->multa_percentual],
+        $c->id => [
+            'multa' => (float) $c->multa_percentual,
+            'valor_aluguel' => (float) $c->valor_aluguel,
+            'valor_condominio' => $c->imovel->possui_condominio ? (float) $c->valor_condominio : 0,
+            'valor_iptu' => (float) $c->valor_iptu,
+            'parcela_iptu' => $c->parcela_iptu,
+            'valor_seguro' => (float) $c->valor_seguro,
+            'dia_vencimento' => (int) $c->dia_vencimento,
+        ],
     ]);
     $feriados = \App\Models\Feriado::pluck('data')->map(fn ($d) => $d->format('Y-m-d'));
 @endphp
@@ -54,11 +61,13 @@
     </div>
 
     <div class="col-md-3">
-        <label class="form-label">Data de vencimento *</label>
-        <input type="date" name="data_vencimento" id="data_vencimento"
-               value="{{ old('data_vencimento', $fatura?->data_vencimento?->format('Y-m-d')) }}"
-               class="form-control @error('data_vencimento') is-invalid @enderror">
-        @error('data_vencimento') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        <label class="form-label">Data de vencimento</label>
+        <input type="text" id="data_vencimento_display"
+               value="{{ $fatura?->data_vencimento?->format('d/m/Y') ?: 'Selecione contrato e referência' }}"
+               class="form-control" disabled>
+        <input type="hidden" id="data_vencimento" name="data_vencimento"
+               value="{{ old('data_vencimento', $fatura?->data_vencimento?->format('Y-m-d')) }}">
+        <div class="form-text">Calculado automaticamente: referência (mês X+1) + dia de vencimento do contrato.</div>
     </div>
 
     <div class="col-12"><hr><h2 class="h6">Valores</h2></div>
@@ -83,13 +92,13 @@
     <div class="col-md-2">
         <label class="form-label">IPTU</label>
         <input type="number" step="0.01" name="valor_iptu" id="valor_iptu"
-               value="{{ old('valor_iptu', $fatura?->valor_iptu ?? 0) }}" class="form-control">
-        <div class="form-text">Não é pré-preenchido: confirme se este mês tem cobrança de IPTU.</div>
+               value="{{ old('valor_iptu', $baseParaValores?->valor_iptu ?? 0) }}" class="form-control">
+        <div class="form-text">Preenchido pelo contrato; ajuste caso esta competência não tenha IPTU.</div>
     </div>
 
     <div class="col-md-2">
         <label class="form-label">Parcela IPTU</label>
-        <input type="text" name="parcela_iptu" value="{{ old('parcela_iptu', $fatura?->parcela_iptu) }}" class="form-control" placeholder="Ex: 03/10">
+        <input type="text" name="parcela_iptu" id="parcela_iptu" value="{{ old('parcela_iptu', $baseParaValores?->parcela_iptu) }}" class="form-control" placeholder="Ex: 03/10">
     </div>
 
     <div class="col-md-2">
@@ -224,6 +233,41 @@
         return $('contrato_id').value;
     }
 
+    function calcularVencimento() {
+        const contratoId = contratoIdAtual();
+        const contrato = contratosInfo[contratoId];
+        const referenciaMes = $('referencia_mes').value;
+
+        if (!contrato || !referenciaMes) {
+            $('data_vencimento').value = '';
+            $('data_vencimento_display').value = 'Selecione contrato e referência';
+            return;
+        }
+
+        // Referência = mês selecionado (dia 01), vencimento = mês seguinte + dia_vencimento
+        const [ano, mes] = referenciaMes.split('-').map(Number);
+        const dataReferencia = new Date(ano, mes - 1, 1);
+        const dataVencimento = new Date(ano, mes, Math.min(contrato.dia_vencimento, 28));
+
+        $('data_vencimento').value = formatarYMD(dataVencimento);
+        $('data_vencimento_display').value = dataVencimento.toLocaleDateString('pt-BR');
+    }
+
+    function preencherValoresDoContrato() {
+        const contrato = contratosInfo[$('contrato_id').value];
+
+        if (!contrato) {
+            return;
+        }
+
+        $('valor_aluguel').value = contrato.valor_aluguel;
+        $('valor_condominio').value = contrato.valor_condominio;
+        $('valor_iptu').value = contrato.valor_iptu;
+        $('parcela_iptu').value = contrato.parcela_iptu ?? '';
+        $('valor_seguro').value = contrato.valor_seguro;
+        recalcular();
+    }
+
     function recalcular() {
         const aluguel = numero($('valor_aluguel').value);
         const condominio = numero($('valor_condominio').value);
@@ -272,6 +316,12 @@
     const form = $('form-fatura');
     form.addEventListener('input', recalcular);
     form.addEventListener('change', recalcular);
+    $('contrato_id')?.addEventListener('change', () => {
+        preencherValoresDoContrato();
+        calcularVencimento();
+    });
+    $('referencia_mes')?.addEventListener('change', calcularVencimento);
+    calcularVencimento();
     recalcular();
 })();
 </script>
