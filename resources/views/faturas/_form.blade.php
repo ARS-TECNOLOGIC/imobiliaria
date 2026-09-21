@@ -51,7 +51,7 @@
 
     <div class="col-md-3">
         <label class="form-label">Referência (mês) *</label>
-        <input type="month" name="referencia_mes"
+        <input type="month" name="referencia_mes" id="referencia_mes"
                value="{{ old('referencia_mes', $fatura?->referencia?->format('Y-m')) }}"
                class="form-control @error('referencia') is-invalid @enderror"
                onchange="document.getElementById('referencia_hidden').value = this.value + '-01'">

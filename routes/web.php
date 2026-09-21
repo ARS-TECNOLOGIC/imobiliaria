@@ -15,6 +15,9 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('pessoas/buscar', [PessoaController::class, 'buscar'])->name('pessoas.buscar');
+Route::post('pessoas/ajax', [PessoaController::class, 'storeAjax'])->name('pessoas.ajax');
+
 Route::resource('pessoas', PessoaController::class);
 
 Route::resource('imoveis', ImovelController::class)->parameters(['imoveis' => 'imovel']);

@@ -30,6 +30,23 @@
                     {{ $pessoa->cidade }}/{{ $pessoa->uf }}
                 </dd>
             </dl>
+
+            @if ($pessoa->relacionamentos->isNotEmpty())
+                <hr>
+                <h2 class="h5">Vínculo conjugal</h2>
+                <ul class="list-group">
+                    @foreach ($pessoa->relacionamentos as $rel)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                {{ $rel->conjuge?->nome ?? 'Pessoa removida' }}
+                                <span class="badge bg-secondary">
+                                    {{ strtolower(str_replace('_', ' ', $rel->tipo_vinculo->value)) }}
+                                </span>
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         </div>
 
         <div class="col-md-6">

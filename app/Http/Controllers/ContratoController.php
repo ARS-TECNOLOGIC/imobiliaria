@@ -7,18 +7,44 @@ use App\Models\Contrato;
 use App\Models\Imovel;
 use App\Models\Pessoa;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class ContratoController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $contratos = Contrato::query()
-            ->with('imovel', 'favorecido')
-            ->orderByDesc('id')
-            ->paginate(15);
+        $busca = $request->input('busca', '');
 
-        return view('contratos.index', compact('contratos'));
+        $contratos = Contrato::query()
+            ->with(['imovel', 'partes.pessoa'])
+            ->when($busca, function ($query, $busca) {
+                $termo = "%{$busca}%";
+                $query->where(function ($q) use ($termo) {
+                    $q->where('contratos.id', 'like', $termo)
+                        ->orWhereHas('imovel', function ($q2) use ($termo) {
+                            $q2->where('codigo', 'like', $termo);
+                        })
+                        ->orWhereHas('partes', function ($q2) use ($termo) {
+                            $q2->where('papel', 'LOCADOR_TITULAR')
+                                ->whereHas('pessoa', function ($q3) use ($termo) {
+                                    $q3->where('nome', 'like', $termo);
+                                });
+                        })
+                        ->orWhereHas('partes', function ($q2) use ($termo) {
+                            $q2->where('papel', 'LOCATARIO_TITULAR')
+                                ->whereHas('pessoa', function ($q3) use ($termo) {
+                                    $q3->where('nome', 'like', $termo);
+                                });
+                        });
+                });
+            })
+            ->orderByDesc('contratos.id')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('contratos.index', compact('contratos', 'busca'));
     }
 
     public function create(): View
@@ -69,7 +95,7 @@ class ContratoController extends Controller
             ->with('sucesso', 'Contrato removido com sucesso.');
     }
 
-    /** @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection} */
+    /** @return array{0: Collection, 1: Collection} */
     private function opcoesFormulario(): array
     {
         $imoveis = Imovel::orderBy('codigo')->get(['id', 'codigo', 'logradouro', 'numero', 'locador_id']);

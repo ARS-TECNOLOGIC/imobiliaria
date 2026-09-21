@@ -17,7 +17,12 @@ class FaturaRequest extends FormRequest
     {
         return [
             'contrato_id' => ['required', 'exists:contratos,id'],
-            'referencia' => ['required', 'date'],
+            'referencia' => [
+                'required', 'date',
+                Rule::unique('faturas')->where(fn ($query) => $query
+                    ->where('contrato_id', $this->input('contrato_id'))
+                )->ignore($this->route('fatura')),
+            ],
             'data_vencimento' => ['nullable', 'date'],
             'valor_aluguel' => ['required', 'numeric', 'min:0'],
             'valor_condominio' => ['nullable', 'numeric', 'min:0'],
@@ -43,6 +48,7 @@ class FaturaRequest extends FormRequest
     {
         return [
             'contrato_id' => 'contrato',
+            'referencia' => 'referência',
             'valor_aluguel' => 'valor do aluguel',
             'valor_condominio' => 'valor do condomínio',
             'valor_iptu' => 'valor do IPTU',

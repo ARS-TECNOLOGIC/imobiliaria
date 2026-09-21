@@ -1,0 +1,109 @@
+=============================================================================
+PLANEJAMENTO — Estilização da Tabela de Contratos
+Data: 2026-09-21
+=============================================================================
+
+ARQUIVOS IDENTIFICADOS
+----------------------
+View da tabela:      resources/views/contratos/index.blade.php (115 linhas)
+Fonte de estilos:    resources/css/app.css (1194 linhas)
+CSS compilado:       build/assets/app-Cqgn_VDx.css (gerado pelo Vite — NÃO será editado)
+Vite config:         vite.config.js — confirma compilação de resources/css/app.css
+
+SOMENTE SERÁ EDITADO: resources/css/app.css
+
+=============================================================================
+ESTADO ATUAL (app.css:323-349)
+=============================================================================
+
+Regras existentes:
+  .table-contratos .col-id       { width: 60px; white-space: nowrap; }
+  .table-contratos .col-imovel   { white-space: nowrap; }
+  .table-contratos .col-pessoa   { min-width: 160px; max-width: 200px; }
+  .table-contratos .col-valores  { min-width: 200px; white-space: nowrap; font-size: var(--font-size-xs); }
+  .table-contratos .col-total    { white-space: nowrap; text-align: right; font-weight: var(--font-weight-semibold); }
+  .table-contratos .col-status   { white-space: nowrap; }
+  .table-contratos .col-acoes    { white-space: nowrap; }
+
+  .table-contratos .pessoa-truncate { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .table-contratos .valores-item    { display: block; line-height: 1.4; }
+  .table-contratos .acoes-cell      { display: flex; gap: var(--space-1); justify-content: flex-end; flex-wrap: nowrap; }
+
+=============================================================================
+PROBLEMAS IDENTIFICADOS
+=============================================================================
+
+1. .col-valores: white-space: nowrap impede quebra de linha dos .valores-item.
+   Largura insuficiente para 4 itens financeiros.
+
+2. .col-pessoa: sem width fixa, o table-layout automático pode ignorar
+   max-width: 200px, impedindo o truncamento.
+
+3. .acoes-cell: <form> do botão Excluir é inline por padrão — não se
+   comporta como flex item. Precisa de display: contents.
+
+4. .col-total: já tem font-weight semibold, mas pode ganhar mais destaque
+   com font-size maior.
+
+5. Responsivo: não existem regras para .table-contratos em mobile.
+
+=============================================================================
+AÇÕES PLANEJADAS
+=============================================================================
+
+1. Corrigir .col-valores — largura e quebra de linha
+   ANTES: min-width: 200px; white-space: nowrap; font-size: var(--font-size-xs);
+   DEPOIS: width: 220px; min-width: 180px; font-size: var(--font-size-xs);
+   Motivo: remover white-space: nowrap para permitir display: block dos itens.
+
+2. Corrigir .col-pessoa — garantir truncamento efetivo
+   ANTES: min-width: 160px; max-width: 200px;
+   DEPOIS: width: 180px; max-width: 200px;
+   Motivo: width fixa garante que text-overflow: ellipsis funcione.
+
+3. Reforçar .col-total — destaque tipográfico
+   ANTES: white-space: nowrap; text-align: right; font-weight: var(--font-weight-semibold);
+   DEPOIS: white-space: nowrap; text-align: right; font-weight: var(--font-weight-semibold); font-size: var(--font-size-sm);
+   Motivo: font-size maior que xs das outras colunas dá destaque sem HTML.
+
+4. Corrigir .acoes-cell — alinhar <form> no flex
+   ANTES: display: flex; gap: var(--space-1); justify-content: flex-end; flex-wrap: nowrap;
+   DEPOIS: display: flex; gap: var(--space-2); justify-content: flex-end; align-items: center; flex-wrap: nowrap;
+   NOVA REGRA: .table-contratos .acoes-cell form { display: contents; }
+   Motivo: display: contents faz o form "desaparecer", button vira flex item direto.
+            gap maior = espaçamento uniforme. align-items = alinhamento vertical.
+
+5. Adicionar regras responsivas para .table-contratos
+
+   @media (max-width: 768px) {
+     .table-contratos .col-imovel,
+     .table-contratos .col-pessoa { width: auto; min-width: 120px; }
+     .table-contratos .col-valores { width: auto; min-width: 150px; }
+     .table-contratos .col-id { width: 40px; }
+   }
+
+   @media (max-width: 576px) {
+     .table-contratos { font-size: var(--font-size-xs); }
+     .table-contratos .col-pessoa { min-width: 100px; }
+     .table-contratos .col-valores { min-width: 130px; }
+     .table-contratos .col-id { width: 35px; }
+     .table-contratos .acoes-cell { gap: var(--space-1); }
+     .table-contratos .acoes-cell .btn { padding: 0.3rem 0.5rem; font-size: 0.7rem; }
+   }
+
+   Nota: .table-responsive do Bootstrap já cuida do scroll horizontal.
+   Não serão ocultadas colunas — apenas ajustada densidade e espaçamento.
+
+=============================================================================
+O QUE NÃO SERÁ ALTERADO
+=============================================================================
+- HTML da tabela (preservado integralmente)
+- Backend, rotas ou consultas
+- Estilos de cores de botões/badges (visualizar, editar, excluir, status)
+- Padding global de .table
+- Regras globais para .table, .btn ou .badge
+
+=============================================================================
+LARGURAS PARA TESTE
+=============================================================================
+1920px | 1440px | 1366px | 1280px | 1024px | 768px | 576px | 430px | 390px | 375px

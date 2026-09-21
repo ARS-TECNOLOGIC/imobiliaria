@@ -3,10 +3,16 @@
 @section('titulo', 'Contrato #' . $contrato->id)
 
 @section('conteudo')
+    @php
+        $locador = $contrato->partes->first(fn($p) => $p->papel->value === 'LOCADOR_TITULAR');
+        $locatario = $contrato->partes->first(fn($p) => $p->papel->value === 'LOCATARIO_TITULAR');
+        $valorTotal = $contrato->valor_aluguel + $contrato->valor_condominio + $contrato->valor_iptu + $contrato->valor_seguro;
+    @endphp
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h3 mb-0">
             Contrato #{{ $contrato->id }}
-            <span class="badge bg-{{ $contrato->status->value === 'ATIVO' ? 'success' : 'secondary' }}">
+            <span class="badge bg-{{ $contrato->status->value === 'ATIVO' ? 'success' : ($contrato->status->value === 'SUSPENSO' ? 'warning' : 'secondary') }} ms-2">
                 {{ $contrato->status->value }}
             </span>
         </h1>
@@ -16,66 +22,118 @@
         </div>
     </div>
 
+    <div class="ds-section mb-4">
+        <div class="ds-card">
+            <div class="ds-card-body">
+                <table class="table table-borderless mb-0 align-middle">
+                    <tbody>
+                        <tr>
+                            <th style="width:220px" class="text-muted">Imóvel</th>
+                            <td>
+                                <strong>{{ $contrato->imovel->codigo }}</strong>
+                                — {{ $contrato->imovel->logradouro }}, {{ $contrato->imovel->numero }}
+                                @if ($contrato->imovel->complemento)
+                                    — {{ $contrato->imovel->complemento }}
+                                @endif
+                                — {{ $contrato->imovel->bairro }}, {{ $contrato->imovel->cidade }}/{{ $contrato->imovel->uf }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Locador</th>
+                            <td>{{ $locador->pessoa?->nome ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Locatário</th>
+                            <td>{{ $locatario->pessoa?->nome ?? '—' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Favorecido do repasse</th>
+                            <td>{{ $contrato->favorecido?->nome ?? 'Pessoa removida' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Vigência</th>
+                            <td>
+                                {{ $contrato->data_inicio->format('d/m/Y') }} até
+                                {{ $contrato->data_fim?->format('d/m/Y') ?? 'em aberto' }}
+                                · Vencimento: todo dia {{ $contrato->dia_vencimento }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Garantia</th>
+                            <td>{{ ucfirst(strtolower(str_replace('_', ' ', $contrato->garantia->value))) }}</td>
+                        </tr>
+                        <tr><td colspan="2"><hr class="my-1"></td></tr>
+                        <tr>
+                            <th class="text-muted">Aluguel</th>
+                            <td>R$ {{ number_format($contrato->valor_aluguel, 2, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Condomínio</th>
+                            <td>R$ {{ number_format($contrato->valor_condominio, 2, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">IPTU</th>
+                            <td>R$ {{ number_format($contrato->valor_iptu, 2, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Seguro</th>
+                            <td>R$ {{ number_format($contrato->valor_seguro, 2, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted fs-5">Valor total da locação</th>
+                            <td class="fs-5 fw-bold">R$ {{ number_format($valorTotal, 2, ',', '.') }}</td>
+                        </tr>
+                        <tr><td colspan="2"><hr class="my-1"></td></tr>
+                        <tr>
+                            <th class="text-muted">Taxa de administração</th>
+                            <td>{{ $contrato->taxa_adm_percentual }}%</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Multa por atraso</th>
+                            <td>{{ $contrato->multa_percentual }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="row g-4">
         <div class="col-md-6">
-            <h2 class="h5">Dados do contrato</h2>
-            <dl class="row">
-                <dt class="col-sm-5">Imóvel</dt>
-                <dd class="col-sm-7">{{ $contrato->imovel->codigo }} — {{ $contrato->imovel->logradouro }}, {{ $contrato->imovel->numero }}</dd>
+            <div class="ds-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">
+                        <i class="fa-solid fa-users ds-section-icon"></i>
+                        Partes do contrato
+                    </h2>
+                </div>
 
-                <dt class="col-sm-5">Favorecido do repasse</dt>
-                <dd class="col-sm-7">{{ $contrato->favorecido?->nome ?? 'Pessoa removida' }}</dd>
-
-                <dt class="col-sm-5">Vigência</dt>
-                <dd class="col-sm-7">
-                    {{ $contrato->data_inicio->format('d/m/Y') }} até
-                    {{ $contrato->data_fim?->format('d/m/Y') ?? 'em aberto' }}
-                </dd>
-
-                <dt class="col-sm-5">Dia de vencimento</dt>
-                <dd class="col-sm-7">Todo dia {{ $contrato->dia_vencimento }}</dd>
-
-                <dt class="col-sm-5">Garantia</dt>
-                <dd class="col-sm-7">{{ ucfirst(strtolower(str_replace('_', ' ', $contrato->garantia->value))) }}</dd>
-
-                <dt class="col-sm-5">Aluguel</dt>
-                <dd class="col-sm-7">R$ {{ number_format($contrato->valor_aluguel, 2, ',', '.') }}</dd>
-
-                <dt class="col-sm-5">Condomínio / IPTU / Seguro</dt>
-                <dd class="col-sm-7">
-                    R$ {{ number_format($contrato->valor_condominio, 2, ',', '.') }} /
-                    R$ {{ number_format($contrato->valor_iptu, 2, ',', '.') }} /
-                    R$ {{ number_format($contrato->valor_seguro, 2, ',', '.') }}
-                </dd>
-
-                <dt class="col-sm-5">Taxa de administração</dt>
-                <dd class="col-sm-7">{{ $contrato->taxa_adm_percentual }}%</dd>
-            </dl>
-        </div>
-
-        <div class="col-md-6">
-            <h2 class="h5">Partes do contrato</h2>
-            <ul class="list-group mb-3">
-                @forelse ($contrato->partes as $parte)
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <span>
-                            {{ $parte->pessoa?->nome ?? 'Pessoa removida' }}
-                            <span class="badge bg-secondary">{{ str_replace('_', ' ', $parte->papel->value) }}</span>
-                            @unless ($parte->assina_contrato)
-                                <span class="badge bg-warning text-dark">não assina</span>
-                            @endunless
-                        </span>
-                        <form action="{{ route('contrato-partes.destroy', $parte) }}" method="POST"
-                              onsubmit="return confirm('Remover esta parte do contrato?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
-                        </form>
-                    </li>
-                @empty
-                    <li class="list-group-item text-muted">Nenhuma parte cadastrada ainda.</li>
-                @endforelse
-            </ul>
+                <div class="ds-card">
+                    <div class="ds-card-body">
+                        <ul class="list-group mb-0">
+                            @forelse ($contrato->partes as $parte)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>
+                                        {{ $parte->pessoa?->nome ?? 'Pessoa removida' }}
+                                        <span class="badge bg-secondary">{{ str_replace('_', ' ', $parte->papel->value) }}</span>
+                                        @unless ($parte->assina_contrato)
+                                            <span class="badge bg-highlight text-dark">não assina</span>
+                                        @endunless
+                                    </span>
+                                    <form action="{{ route('contrato-partes.destroy', $parte) }}" method="POST"
+                                          onsubmit="return confirm('Remover esta parte do contrato?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
+                                    </form>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-muted mb-0">Nenhuma parte cadastrada ainda.</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
             <form action="{{ route('contratos.partes.store', $contrato) }}" method="POST" class="row g-2 mb-4">
                 @csrf
@@ -106,69 +164,102 @@
                 </div>
             </form>
 
-            <h2 class="h5 d-flex justify-content-between align-items-center">
-                Faturas
-                <a href="{{ route('faturas.create', ['contrato_id' => $contrato->id]) }}" class="btn btn-sm btn-outline-primary">Nova fatura</a>
-            </h2>
-            <ul class="list-group mb-4">
-                @forelse ($contrato->faturas as $fatura)
-                    <li class="list-group-item d-flex justify-content-between">
-                        <a href="{{ route('faturas.show', $fatura) }}">{{ $fatura->referencia->format('m/Y') }}</a>
-                        <span class="badge bg-secondary">{{ str_replace('_', ' ', $fatura->status_pagamento->value) }}</span>
-                    </li>
-                @empty
-                    <li class="list-group-item text-muted">Nenhuma fatura gerada.</li>
-                @endforelse
-            </ul>
+            <div class="ds-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">
+                        <i class="fa-solid fa-file-invoice-dollar ds-section-icon"></i>
+                        Faturas
+                    </h2>
+                    <a href="{{ route('faturas.create', ['contrato_id' => $contrato->id]) }}" class="btn btn-sm btn-outline-primary">Nova fatura</a>
+                </div>
 
+                <div class="ds-card">
+                    <div class="ds-card-body">
+                        <ul class="list-group mb-0">
+                            @forelse ($contrato->faturas as $fatura)
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <a href="{{ route('faturas.show', $fatura) }}">{{ $fatura->referencia->format('m/Y') }}</a>
+                                    @php
+                                        $corFat = match ($fatura->status_pagamento->value) {
+                                            'PAGO' => 'success',
+                                            'PAGO_COM_ATRASO' => 'highlight',
+                                            'ATRASADO' => 'danger',
+                                            'CANCELADO' => 'dark',
+                                            default => 'info',
+                                        };
+                                    @endphp
+                                    <span class="badge bg-{{ $corFat }}">{{ str_replace('_', ' ', $fatura->status_pagamento->value) }}</span>
+                                </li>
+                            @empty
+                                <li class="list-group-item text-muted mb-0">Nenhuma fatura gerada.</li>
+                            @endforelse
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
             @if (in_array($contrato->garantia, [\App\Enums\Garantia::SEGURO_FIANCA, \App\Enums\Garantia::TITULO_CAPITALIZACAO]))
-                <h2 class="h5">Seguro / Fiança</h2>
-                <ul class="list-group mb-3">
-                    @forelse ($contrato->segurosFiancas as $seguro)
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <span>
-                                {{ $seguro->seguradora }} — apólice {{ $seguro->numero_apolice ?? 's/n' }}
-                                <span class="badge bg-secondary">{{ str_replace('_', ' ', $seguro->status->value) }}</span>
-                                <div class="small text-muted">vence em {{ $seguro->data_vencimento_apolice->format('d/m/Y') }}</div>
-                            </span>
-                            <form action="{{ route('contrato-seguros.destroy', $seguro) }}" method="POST"
-                                  onsubmit="return confirm('Remover esta apólice?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
-                            </form>
-                        </li>
-                    @empty
-                        <li class="list-group-item text-muted">Nenhuma apólice cadastrada.</li>
-                    @endforelse
-                </ul>
+                <div class="ds-section">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">
+                        <i class="fa-solid fa-shield-halved ds-section-icon"></i>
+                        Seguro / Fiança
+                    </h2>
+                    </div>
 
-                <form action="{{ route('contratos.seguros.store', $contrato) }}" method="POST" class="row g-2">
-                    @csrf
-                    <input type="hidden" name="status" value="ATIVO">
-                    <div class="col-md-3">
-                        <select name="tipo" class="form-select" required>
-                            @foreach (\App\Enums\TipoSeguro::cases() as $opcao)
-                                <option value="{{ $opcao->value }}">{{ str_replace('_', ' ', $opcao->value) }}</option>
-                            @endforeach
-                        </select>
+                    <div class="ds-card">
+                        <div class="ds-card-body">
+                            <ul class="list-group mb-3">
+                                @forelse ($contrato->segurosFiancas as $seguro)
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            {{ $seguro->seguradora }} — apólice {{ $seguro->numero_apolice ?? 's/n' }}
+                                            <span class="badge bg-secondary">{{ str_replace('_', ' ', $seguro->status->value) }}</span>
+                                            <div class="small text-muted">vence em {{ $seguro->data_vencimento_apolice->format('d/m/Y') }}</div>
+                                        </span>
+                                        <form action="{{ route('contrato-seguros.destroy', $seguro) }}" method="POST"
+                                              onsubmit="return confirm('Remover esta apólice?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
+                                        </form>
+                                    </li>
+                                @empty
+                                    <li class="list-group-item text-muted mb-0">Nenhuma apólice cadastrada.</li>
+                                @endforelse
+                            </ul>
+
+                            <form action="{{ route('contratos.seguros.store', $contrato) }}" method="POST" class="row g-2">
+                                @csrf
+                                <input type="hidden" name="status" value="ATIVO">
+                                <div class="col-md-3">
+                                    <select name="tipo" class="form-select" required>
+                                        @foreach (\App\Enums\TipoSeguro::cases() as $opcao)
+                                            <option value="{{ $opcao->value }}">{{ str_replace('_', ' ', $opcao->value) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" name="seguradora" placeholder="Seguradora" class="form-control" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="text" name="numero_apolice" placeholder="Nº apólice" class="form-control">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" name="data_inicio" class="form-control" required title="Início da apólice">
+                                </div>
+                                <div class="col-md-2">
+                                    <input type="date" name="data_vencimento_apolice" class="form-control" required title="Vencimento da apólice">
+                                </div>
+                                <div class="col-12 mt-2">
+                                    <button type="submit" class="btn btn-outline-primary">Adicionar apólice</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <input type="text" name="seguradora" placeholder="Seguradora" class="form-control" required>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="text" name="numero_apolice" placeholder="Nº apólice" class="form-control">
-                    </div>
-                    <div class="col-md-2">
-                        <input type="date" name="data_inicio" class="form-control" required title="Início da apólice">
-                    </div>
-                    <div class="col-md-2">
-                        <input type="date" name="data_vencimento_apolice" class="form-control" required title="Vencimento da apólice">
-                    </div>
-                    <div class="col-12 mt-2">
-                        <button type="submit" class="btn btn-outline-primary">Adicionar apólice</button>
-                    </div>
-                </form>
+                </div>
             @endif
         </div>
     </div>
@@ -184,16 +275,16 @@
     <div class="ds-section">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2 class="ds-section-title mb-0">
-                <span class="ds-section-icon">&#128194;</span>
+                <i class="fa-solid fa-folder-open ds-section-icon"></i>
                 Documentos
             </h2>
             <span class="badge bg-light text-dark border">{{ $documentos->count() }} arquivo(s)</span>
         </div>
 
         {{-- Formulário de upload --}}
-        <div class="ds-card mb-4">
+        <div class="ds-card mb-4 p-2">
             <div class="ds-card-header d-flex align-items-center gap-2">
-                <span class="ds-card-icon">&#8682;</span>
+                <i class="fa-solid fa-cloud-arrow-up"></i>
                 <strong>Enviar novo documento</strong>
             </div>
             <div class="ds-card-body">
@@ -262,10 +353,10 @@
                 </div>
                 <div class="d-flex gap-2">
                     <button type="button" class="btn btn-outline-success btn-sm" id="btn-download-selected" disabled>
-                        <span>&#8595;</span> Baixar
+                        <i class="fa-solid fa-download"></i> Baixar
                     </button>
                     <button type="button" class="btn btn-outline-danger btn-sm" id="btn-remove-selected" disabled>
-                        <span>&#10005;</span> Remover
+                        <i class="fa-solid fa-xmark"></i> Remover
                     </button>
                 </div>
             </div>
@@ -273,7 +364,7 @@
             @if ($documentos->isEmpty())
                 {{-- Estado vazio --}}
                 <div class="ds-empty-state">
-                    <div class="ds-empty-icon">&#128194;</div>
+                    <div class="ds-empty-icon"><i class="fa-regular fa-folder-open"></i></div>
                     <p class="ds-empty-title">Nenhum documento anexado</p>
                     <p class="ds-empty-text">Envie o primeiro documento usando o formulario acima.</p>
                 </div>
@@ -285,7 +376,7 @@
                         <button type="button"
                                 class="ds-folder-item active"
                                 data-folder="all">
-                            <span class="ds-folder-icon">&#128193;</span>
+                            <span class="ds-folder-icon"><i class="fa-solid fa-folder"></i></span>
                             <span class="ds-folder-name">Todos os documentos</span>
                             <span class="ds-folder-count">{{ $documentos->count() }}</span>
                         </button>
@@ -294,7 +385,7 @@
                                 <button type="button"
                                         class="ds-folder-item"
                                         data-folder="{{ $categoria }}">
-                                    <span class="ds-folder-icon">&#128194;</span>
+                                    <span class="ds-folder-icon"><i class="fa-solid fa-folder"></i></span>
                                     <span class="ds-folder-name">{{ \App\Enums\CategoriaArmazenamento::from($categoria)->label() }}</span>
                                     <span class="ds-folder-count">{{ $docs->count() }}</span>
                                 </button>
@@ -352,13 +443,13 @@
                                             <div class="d-flex gap-1">
                                                 <a href="{{ route('documentos.download', $doc) }}"
                                                    class="btn btn-sm btn-outline-success"
-                                                   title="Baixar">&#8595;</a>
+                                                   title="Baixar"><i class="fa-solid fa-download"></i></a>
                                                 <form action="{{ route('documentos.destroy', $doc) }}" method="POST"
                                                       class="d-inline" onsubmit="return confirm('Remover este documento?');">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                            title="Remover">&#10005;</button>
+                                                            title="Remover"><i class="fa-solid fa-xmark"></i></button>
                                                 </form>
                                             </div>
                                         </td>

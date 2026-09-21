@@ -45,6 +45,7 @@ class PessoaRequest extends FormRequest
             'agencia' => ['nullable', 'string', 'max:20'],
             'conta' => ['nullable', 'string', 'max:20'],
             'tipo_conta' => ['required', Rule::enum(TipoConta::class)],
+            'conjuge_id' => ['nullable', 'exists:pessoas,id'],
         ];
     }
 
@@ -58,6 +59,7 @@ class PessoaRequest extends FormRequest
             'tipo_chave_pix' => 'tipo de chave PIX',
             'chave_pix' => 'chave PIX',
             'tipo_conta' => 'tipo de conta',
+            'conjuge_id' => 'cônjuge',
         ];
     }
 }

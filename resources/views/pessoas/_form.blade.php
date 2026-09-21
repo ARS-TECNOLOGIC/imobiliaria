@@ -1,6 +1,10 @@
 @php
     // $pessoa existe (e vem preenchida) na tela de edição; na de criação, é null.
     $pessoa = $pessoa ?? null;
+    $estadosVinculo = [\App\Enums\EstadoCivil::CASADO, \App\Enums\EstadoCivil::UNIAO_ESTAVEL];
+    $estadoAtual = old('estado_civil', $pessoa?->estado_civil?->value);
+    $mostrarVinculo = in_array($estadoAtual, array_column($estadosVinculo, 'value'));
+    $vinculoExistente = $pessoa?->relacionamentos?->first();
 @endphp
 
 <div class="row g-3">
@@ -32,7 +36,7 @@
 
     <div class="col-md-3">
         <label class="form-label">Estado civil *</label>
-        <select name="estado_civil" class="form-select @error('estado_civil') is-invalid @enderror">
+        <select name="estado_civil" class="form-select @error('estado_civil') is-invalid @enderror" id="estado-civil">
             @foreach (\App\Enums\EstadoCivil::cases() as $opcao)
                 <option value="{{ $opcao->value }}"
                     @selected(old('estado_civil', $pessoa?->estado_civil?->value) === $opcao->value)>
@@ -69,6 +73,34 @@
     <div class="col-md-3">
         <label class="form-label">Celular</label>
         <input type="text" name="celular" value="{{ old('celular', $pessoa?->celular) }}" class="form-control">
+    </div>
+
+    {{-- Seção de vínculo conjugal --}}
+    <div id="secao-vinculo" class="col-12" style="{{ $mostrarVinculo ? '' : 'display:none' }}">
+        <hr>
+        <h2 class="h6">
+            <i class="fa-solid fa-link ds-section-icon"></i>
+            Vincular cônjuge / companheiro(a)
+        </h2>
+
+        <div class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label">Cônjuge</label>
+                <select name="conjuge_id" id="conjuge-select" class="form-select">
+                    <option value="">— Selecione uma pessoa —</option>
+                    @if ($vinculoExistente && $vinculoExistente->conjuge)
+                        <option value="{{ $vinculoExistente->conjuge_id }}" selected>
+                            {{ $vinculoExistente->conjuge->nome }} ({{ $vinculoExistente->conjuge->cpf_cnpj }})
+                        </option>
+                    @endif
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="button" class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#modalNovaPessoa">
+                    <i class="fa-solid fa-plus me-1"></i> Cadastrar nova pessoa
+                </button>
+            </div>
+        </div>
     </div>
 
     <div class="col-12"><hr><h2 class="h6">Endereço</h2></div>
@@ -148,3 +180,4 @@
         @error('tipo_conta') <div class="invalid-feedback">{{ $message }}</div> @enderror
     </div>
 </div>
+

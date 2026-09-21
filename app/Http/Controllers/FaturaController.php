@@ -21,14 +21,29 @@ class FaturaController extends Controller
         private CalculadoraRepasse $calculadoraRepasse,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
+        $busca = $request->input('busca', '');
+        $vencimentoDe = $request->input('vencimento_de');
+        $vencimentoAte = $request->input('vencimento_ate');
+        $status = $request->input('status_pagamento');
+
         $faturas = Fatura::query()
             ->with('contrato.imovel')
+            ->when($busca, fn ($query, $busca) => $query->where(function ($q) use ($busca) {
+                $termo = "%{$busca}%";
+                $q->where('contrato_id', 'like', $termo)
+                    ->orWhereHas('contrato.imovel', fn ($q2) => $q2->where('codigo', 'like', $termo))
+                    ->orWhereRaw('DATE_FORMAT(referencia, "%m/%Y") LIKE ?', [$termo]);
+            }))
+            ->when($vencimentoDe, fn ($query, $d) => $query->where('data_vencimento', '>=', $d))
+            ->when($vencimentoAte, fn ($query, $d) => $query->where('data_vencimento', '<=', $d))
+            ->when($status, fn ($query, $s) => $query->where('status_pagamento', $s))
             ->orderByDesc('referencia')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('faturas.index', compact('faturas'));
+        return view('faturas.index', compact('faturas', 'busca', 'vencimentoDe', 'vencimentoAte', 'status'));
     }
 
     public function create(Request $request): View

@@ -6,18 +6,29 @@ use App\Http\Requests\ImovelRequest;
 use App\Models\Imovel;
 use App\Models\Pessoa;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ImovelController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $busca = $request->input('busca', '');
+
         $imoveis = Imovel::query()
             ->with('locador')
+            ->when($busca, fn ($query, $busca) => $query->where(function ($q) use ($busca) {
+                $termo = "%{$busca}%";
+                $q->where('codigo', 'like', $termo)
+                    ->orWhere('logradouro', 'like', $termo)
+                    ->orWhere('cidade', 'like', $termo)
+                    ->orWhereHas('locador', fn ($q2) => $q2->where('nome', 'like', $termo));
+            }))
             ->orderBy('codigo')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('imoveis.index', compact('imoveis'));
+        return view('imoveis.index', compact('imoveis', 'busca'));
     }
 
     public function create(): View

@@ -38,7 +38,7 @@
                     R$ {{ number_format($fatura->valor_desconto, 2, ',', '.') }} /
                     R$ {{ number_format($fatura->valor_multa_juros, 2, ',', '.') }}
                     @if ($fatura->isento_multa)
-                        <span class="badge bg-info text-dark">isenta</span>
+                        <span class="badge bg-highlight text-dark">isenta</span>
                     @endif
                 </dd>
 
@@ -52,7 +52,16 @@
 
                 <dt class="col-sm-5">Status</dt>
                 <dd class="col-sm-7">
-                    <span class="badge bg-secondary">{{ str_replace('_', ' ', $fatura->status_pagamento->value) }}</span>
+                    @php
+                        $corShow = match ($fatura->status_pagamento->value) {
+                            'PAGO' => 'success',
+                            'PAGO_COM_ATRASO' => 'highlight',
+                            'ATRASADO' => 'danger',
+                            'CANCELADO' => 'dark',
+                            default => 'info',
+                        };
+                    @endphp
+                    <span class="badge bg-{{ $corShow }}">{{ str_replace('_', ' ', $fatura->status_pagamento->value) }}</span>
                 </dd>
 
                 <dt class="col-sm-5">Valor pago</dt>
