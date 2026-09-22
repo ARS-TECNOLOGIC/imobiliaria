@@ -6,13 +6,19 @@ use App\Http\Requests\ContratoRequest;
 use App\Models\Contrato;
 use App\Models\Imovel;
 use App\Models\Pessoa;
+use App\Services\ContratoValorHistoricoService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 class ContratoController extends Controller
 {
+    public function __construct(
+        private readonly ContratoValorHistoricoService $historicoValores,
+    ) {}
+
     public function index(Request $request): View
     {
         $busca = $request->input('busca', '');
@@ -56,7 +62,12 @@ class ContratoController extends Controller
 
     public function store(ContratoRequest $request): RedirectResponse
     {
-        $contrato = Contrato::create($request->validated());
+        $contrato = DB::transaction(function () use ($request): Contrato {
+            $contrato = Contrato::create($request->validated());
+            $this->historicoValores->registrarValoresIniciais($contrato);
+
+            return $contrato;
+        });
 
         return redirect()
             ->route('contratos.show', $contrato)
@@ -65,7 +76,17 @@ class ContratoController extends Controller
 
     public function show(Contrato $contrato): View
     {
-        $contrato->load('imovel.locador', 'favorecido', 'partes.pessoa', 'segurosFiancas', 'faturas');
+        $contrato->load([
+            'imovel.locador',
+            'favorecido',
+            'partes.pessoa',
+            'segurosFiancas',
+            'faturas',
+            'historicoValores' => fn ($query) => $query
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->with('alteradoPor'),
+        ]);
 
         return view('contratos.show', compact('contrato'));
     }
@@ -79,7 +100,15 @@ class ContratoController extends Controller
 
     public function update(ContratoRequest $request, Contrato $contrato): RedirectResponse
     {
-        $contrato->update($request->validated());
+        $originais = $contrato->only(array_keys(
+            ContratoValorHistoricoService::camposMonitorados()
+        ));
+
+        DB::transaction(function () use ($request, $contrato, $originais): void {
+            $contrato->fill($request->validated());
+            $this->historicoValores->registrarAlteracoes($contrato, $originais);
+            $contrato->save();
+        });
 
         return redirect()
             ->route('contratos.show', $contrato)

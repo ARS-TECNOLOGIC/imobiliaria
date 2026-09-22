@@ -1,0 +1,129 @@
+ =============================================================================
+ LEVANTAMENTO — ContratoHistoricoValor (Tarefa 0)
+ Data: 2026-09-22
+ Status: APENAS LEITURA — nenhum código implementado
+ =============================================================================
+
+ Observação: a tarefa menciona "se já bate com o descrito abaixo", mas não
+ trouxe um schema alvo no enunciado. Abaixo documenta-se o que existe de fato
+ (migration + banco real) para confrontar quando o schema esperado for
+ enviado.
+
+ -----------------------------------------------------------------------------
+ 1. MODEL
+ -----------------------------------------------------------------------------
+ Arquivo: app/Models/ContratoHistoricoValor.php
+
+ - Tabela: contrato_historico_valores ($table explícito)
+ - Fillable: contrato_id, tipo_campo, valor_anterior, valor_novo, motivo,
+   alterado_por_user_id
+ - Casts:
+     tipo_campo      => App\Enums\TipoCampoHistorico
+     valor_anterior  => decimal:2
+     valor_novo      => decimal:2
+ - Relações:
+     contrato():     BelongsTo Contrato
+     alteradoPor():  BelongsTo User (FK alterado_por_user_id)
+ - Traits: HasFactory
+
+ Enum de apoio: app/Enums/TipoCampoHistorico.php
+   ALUGUEL | IPTU | CONDOMINIO | SEGURO
+
+ -----------------------------------------------------------------------------
+ 2. MIGRATION
+ -----------------------------------------------------------------------------
+ Arquivo: database/migrations/2026_09_01_000007_create_contrato_historico_valores_table.php
+
+ Colunas criadas:
+   id                          bigint unsigned, PK auto-increment
+   contrato_id                 FK -> contratos.id, cascade on delete
+   tipo_campo                  enum('ALUGUEL','IPTU','CONDOMINIO','SEGURO')
+   valor_anterior              decimal(10,2), NOT NULL
+   valor_novo                  decimal(10,2), NOT NULL
+   motivo                      string(255), NULLABLE
+   alterado_por_user_id        FK -> users.id, NULL on delete, NULLABLE
+   created_at / updated_at     timestamps
+
+ Índices:
+   PK (id)
+   (contrato_id, tipo_campo)
+   FK contrato_id
+   FK alterado_por_user_id
+
+ Banco real (information_schema / Boost schema): BATE 100% com a migration
+ (mesmos tipos, enums, nullability e índices). Não há drift.
+
+ -----------------------------------------------------------------------------
+ 3. FACTORY / SEEDERS / TESTES
+ -----------------------------------------------------------------------------
+ - Factory existe: database/factories/ContratoHistoricoValorFactory.php
+   (contrato via factory, tipo aleatório, valores com reajuste fake, motivo
+   fake, alterado_por_user_id = null)
+ - Seeders: NENHUM uso (grep em database/seeders sem ocorrência)
+ - Tests: NENHUM uso (grep em tests/ sem ocorrência)
+
+ -----------------------------------------------------------------------------
+ 4. USO EM CONTROLLERS / SERVICES / OBSERVERS
+ -----------------------------------------------------------------------------
+ Controllers: NENHUM uso de ContratoHistoricoValor ou historicoValores.
+
+ - ContratoController::store  => Contrato::create($request->validated())
+ - ContratoController::update => $contrato->update($request->validated())
+   → atualiza valor_aluguel / valor_condominio / valor_iptu / valor_seguro
+     SEM gravar linha de histórico.
+
+ Services (app/Services): GeradoraFaturasMensais, CalculadoraRepasse,
+ CalculadoraDiasUteis — nenhum referenciar histórico.
+
+ Observers: NÃO existe diretório app/Observers no projeto.
+
+ -----------------------------------------------------------------------------
+ 5. RELAÇÃO NO MODEL Contrato
+ -----------------------------------------------------------------------------
+ app/Models/Contrato.php (linhas 85-88):
+
+   public function historicoValores(): HasMany
+   {
+       return $this->hasMany(ContratoHistoricoValor::class);
+   }
+
+ A relação Já existe e está correta (hasMany sem FK custom = contrato_id).
+
+ -----------------------------------------------------------------------------
+ 6. TELAS (show / edit do contrato)
+ -----------------------------------------------------------------------------
+ - resources/views/contratos/show.blade.php: NÃO referencia
+   historicoValores / histórico de valores (só dados atuais, partes,
+   faturas, seguro, documentos).
+ - resources/views/contratos/edit.blade.php + _form.blade.php: NÃO
+   mencionam histórico; formulário edita os valores direto no contrato.
+ - Views de listagem/outras: nenhum match para historicoValores /
+   ContratoHistoricoValor / "histórico de valores".
+
+ -----------------------------------------------------------------------------
+ 7. O QUE FALTA (gap real, para revisão)
+ -----------------------------------------------------------------------------
+ [x] Model + enum + factory + migration + relation no Contrato
+ [ ] Captura de histórico no update do contrato (Controller, Observer ou
+     service) — hoje alterações de ALUGUEL/IPTU/CONDOMINIO/SEGURO são
+     perdidas sem rastro
+ [ ] Eager-load / uso da relação em show (ex.: card/lista de histórico)
+ [ ] Eventual hook também no store (valor inicial?) — decisão de negócio
+ [ ] Seeders de cenário real (SistemaLocacaoSeeder) — opcional
+ [ ] Testes de regressão da gravação do histórico
+ [ ] Schema alvo da tarefa (não enviado no enunciado) para conferir se
+     precisa de colunas extras (ex.: user em note, ip, data_vigencia…)
+
+ -----------------------------------------------------------------------------
+ ARQUIVOS RELACIONADOS ENCONTRADOS
+ -----------------------------------------------------------------------------
+ app/Models/ContratoHistoricoValor.php
+ app/Models/Contrato.php (relação historicoValores)
+ app/Enums/TipoCampoHistorico.php
+ database/migrations/2026_09_01_000007_create_contrato_historico_valores_table.php
+ database/factories/ContratoHistoricoValorFactory.php
+ AGENTS.md (menção da tabela na lista de 13 tabelas)
+
+ =============================================================================
+ FIM DO LEVANTAMENTO — aguardando revisão antes de implementar
+ =============================================================================

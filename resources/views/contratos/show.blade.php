@@ -4,234 +4,290 @@
 
 @section('conteudo')
     @php
-        $locador = $contrato->partes->first(fn($p) => $p->papel->value === 'LOCADOR_TITULAR');
-        $locatario = $contrato->partes->first(fn($p) => $p->papel->value === 'LOCATARIO_TITULAR');
+        $locador = $contrato->partes->first(fn ($p) => $p->papel->value === 'LOCADOR_TITULAR');
+        $locatario = $contrato->partes->first(fn ($p) => $p->papel->value === 'LOCATARIO_TITULAR');
         $valorTotal = $contrato->valor_aluguel + $contrato->valor_condominio + $contrato->valor_iptu + $contrato->valor_seguro;
+
+        $iniciais = function (?string $nome): string {
+            $partes = preg_split('/\s+/', trim($nome ?? ''));
+            if ($partes === false || $partes === []) {
+                return '?';
+            }
+            $primeira = mb_substr($partes[0], 0, 1);
+            $ultima = count($partes) > 1 ? mb_substr(end($partes), 0, 1) : '';
+
+            return mb_strtoupper($primeira . $ultima);
+        };
     @endphp
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h3 mb-0">
-            Contrato #{{ $contrato->id }}
-            <span class="badge bg-{{ $contrato->status->value === 'ATIVO' ? 'success' : ($contrato->status->value === 'SUSPENSO' ? 'warning' : 'secondary') }} ms-2">
-                {{ $contrato->status->value }}
-            </span>
-        </h1>
-        <div>
-            <a href="{{ route('contratos.edit', $contrato) }}" class="btn btn-outline-primary">Editar</a>
-            <a href="{{ route('contratos.index') }}" class="btn btn-outline-secondary">Voltar</a>
-        </div>
-    </div>
-
-    <div class="ds-section mb-4">
-        <div class="ds-card">
-            <div class="ds-card-body">
-                <table class="table table-borderless mb-0 align-middle">
-                    <tbody>
-                        <tr>
-                            <th style="width:220px" class="text-muted">Imóvel</th>
-                            <td>
-                                <strong>{{ $contrato->imovel->codigo }}</strong>
-                                — {{ $contrato->imovel->logradouro }}, {{ $contrato->imovel->numero }}
-                                @if ($contrato->imovel->complemento)
-                                    — {{ $contrato->imovel->complemento }}
-                                @endif
-                                — {{ $contrato->imovel->bairro }}, {{ $contrato->imovel->cidade }}/{{ $contrato->imovel->uf }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Locador</th>
-                            <td>{{ $locador->pessoa?->nome ?? '—' }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Locatário</th>
-                            <td>{{ $locatario->pessoa?->nome ?? '—' }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Favorecido do repasse</th>
-                            <td>{{ $contrato->favorecido?->nome ?? 'Pessoa removida' }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Vigência</th>
-                            <td>
-                                {{ $contrato->data_inicio->format('d/m/Y') }} até
-                                {{ $contrato->data_fim?->format('d/m/Y') ?? 'em aberto' }}
-                                · Vencimento: todo dia {{ $contrato->dia_vencimento }}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Garantia</th>
-                            <td>{{ ucfirst(strtolower(str_replace('_', ' ', $contrato->garantia->value))) }}</td>
-                        </tr>
-                        <tr><td colspan="2"><hr class="my-1"></td></tr>
-                        <tr>
-                            <th class="text-muted">Aluguel</th>
-                            <td>R$ {{ number_format($contrato->valor_aluguel, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Condomínio</th>
-                            <td>R$ {{ number_format($contrato->valor_condominio, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">IPTU</th>
-                            <td>R$ {{ number_format($contrato->valor_iptu, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Seguro</th>
-                            <td>R$ {{ number_format($contrato->valor_seguro, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted fs-5">Valor total da locação</th>
-                            <td class="fs-5 fw-bold">R$ {{ number_format($valorTotal, 2, ',', '.') }}</td>
-                        </tr>
-                        <tr><td colspan="2"><hr class="my-1"></td></tr>
-                        <tr>
-                            <th class="text-muted">Taxa de administração</th>
-                            <td>{{ $contrato->taxa_adm_percentual }}%</td>
-                        </tr>
-                        <tr>
-                            <th class="text-muted">Multa por atraso</th>
-                            <td>{{ $contrato->multa_percentual }}%</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="page-header">
+        <div class="page-header-left">
+            <div class="page-icon">
+                <i class="fa-regular fa-file-lines"></i>
+            </div>
+            <div class="detail-header-info">
+                <h1 class="detail-header-title">
+                    Contrato #{{ $contrato->id }}
+                    <x-status-badge :status="$contrato->status" />
+                </h1>
+                <p class="detail-subtitle">
+                    Vigência: {{ $contrato->data_inicio->format('d/m/Y') }} até
+                    {{ $contrato->data_fim?->format('d/m/Y') ?? 'em aberto' }}
+                    · Vencimento: todo dia {{ $contrato->dia_vencimento }}
+                </p>
             </div>
         </div>
+        <div class="detail-actions">
+            <a href="{{ route('contratos.edit', $contrato) }}" class="btn-outline-brand">
+                <i class="fa-solid fa-pencil"></i> Editar
+            </a>
+            <a href="{{ route('contratos.index') }}" class="btn-outline-neutral">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+        </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-6">
+    <div class="detail-layout">
+        <div class="detail-main">
             <div class="ds-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 mb-0">
+                <div class="ds-card">
+                    <div class="ds-card-header">
+                        <i class="fa-solid fa-circle-info ds-section-icon"></i>
+                        Dados do contrato
+                    </div>
+                    <div class="ds-card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Imóvel</span>
+                                <div class="info-item-body">
+                                    <div class="icon-box">
+                                        <i class="fa-solid fa-house"></i>
+                                    </div>
+                                    <div>
+                                        <span class="info-value">
+                                            <strong>{{ $contrato->imovel->codigo }}</strong>
+                                        </span>
+                                        <small class="ds-text-muted d-block">
+                                            {{ $contrato->imovel->logradouro }}, {{ $contrato->imovel->numero }}
+                                            @if ($contrato->imovel->complemento)
+                                                — {{ $contrato->imovel->complemento }}
+                                            @endif
+                                            — {{ $contrato->imovel->bairro }},
+                                            {{ $contrato->imovel->cidade }}/{{ $contrato->imovel->uf }}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Locador</span>
+                                <div class="info-item-body">
+                                    <span class="info-value">
+                                        <i class="fa-regular fa-user ds-section-icon"></i>
+                                        {{ $locador->pessoa?->nome ?? '—' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Locatário</span>
+                                <div class="info-item-body">
+                                    <span class="info-value">
+                                        <i class="fa-regular fa-user ds-section-icon"></i>
+                                        {{ $locatario->pessoa?->nome ?? '—' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Favorecido do repasse</span>
+                                <div class="info-item-body">
+                                    <span class="info-value">
+                                        <i class="fa-solid fa-hand-holding-dollar ds-section-icon"></i>
+                                        {{ $contrato->favorecido?->nome ?? 'Pessoa removida' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Garantia</span>
+                                <div class="info-item-body">
+                                    <span class="info-value">
+                                        <i class="fa-solid fa-shield-halved ds-section-icon"></i>
+                                        {{ ucfirst(strtolower(str_replace('_', ' ', $contrato->garantia->value))) }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-section">
+                <div class="ds-card">
+                    <div class="ds-card-header">
+                        <i class="fa-solid fa-clock-rotate-left ds-section-icon"></i>
+                        Histórico de Valores
+                    </div>
+                    <div class="ds-card-body">
+                        @forelse ($contrato->historicoValores as $registro)
+                            @php
+                                $campoLabel = match ($registro->tipo_campo->value) {
+                                    'ALUGUEL' => 'Aluguel',
+                                    'CONDOMINIO' => 'Condomínio',
+                                    'IPTU' => 'IPTU',
+                                    'SEGURO' => 'Seguro',
+                                    default => $registro->tipo_campo->value,
+                                };
+                                $temDetalhes = $registro->motivo || $registro->alteradoPor;
+                            @endphp
+                            <div class="fatura-list-item">
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <span class="badge bg-light text-dark border">{{ $campoLabel }}</span>
+                                    <span class="ds-text-muted" style="font-size: var(--font-size-xs);">
+                                        {{ $registro->created_at?->format('d/m/Y H:i') }}
+                                    </span>
+                                    <span class="info-value">
+                                        R$ {{ number_format((float) $registro->valor_anterior, 2, ',', '.') }}
+                                        <i class="fa-solid fa-arrow-right ds-section-icon"></i>
+                                        <strong>R$ {{ number_format((float) $registro->valor_novo, 2, ',', '.') }}</strong>
+                                    </span>
+                                </div>
+                                @if ($temDetalhes)
+                                    <button class="btn-icon expand" type="button"
+                                            data-bs-toggle="collapse" data-bs-target="#hist-valor-{{ $registro->id }}"
+                                            aria-expanded="false" title="Detalhes">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+                                @endif
+                            </div>
+                            @if ($temDetalhes)
+                                <div class="collapse" id="hist-valor-{{ $registro->id }}">
+                                    <div class="list-details">
+                                        <div class="list-details__grid">
+                                            @if ($registro->motivo)
+                                                <span class="list-details__item">
+                                                    <i class="fa-solid fa-comment"></i>
+                                                    Motivo: <strong>{{ $registro->motivo }}</strong>
+                                                </span>
+                                            @endif
+                                            <span class="list-details__item">
+                                                <i class="fa-solid fa-user"></i>
+                                                Alterado por: <strong>{{ $registro->alteradoPor?->name ?? 'Sistema' }}</strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        @empty
+                            <p class="ds-text-muted mb-0">Nenhuma alteração registrada</p>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-section">
+                <div class="ds-card">
+                    <div class="ds-card-header">
                         <i class="fa-solid fa-users ds-section-icon"></i>
                         Partes do contrato
-                    </h2>
-                </div>
-
-                <div class="ds-card">
+                    </div>
                     <div class="ds-card-body">
-                        <ul class="list-group mb-0">
-                            @forelse ($contrato->partes as $parte)
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <span>
-                                        {{ $parte->pessoa?->nome ?? 'Pessoa removida' }}
-                                        <span class="badge bg-secondary">{{ str_replace('_', ' ', $parte->papel->value) }}</span>
+                        @forelse ($contrato->partes as $parte)
+                            <div class="parte-card">
+                                <div class="parte-avatar">
+                                    {{ $iniciais($parte->pessoa?->nome ?? 'Pessoa removida') }}
+                                </div>
+                                <div class="parte-info">
+                                    <span class="parte-nome">{{ $parte->pessoa?->nome ?? 'Pessoa removida' }}</span>
+                                    <span class="parte-papel">
+                                        {{ \Illuminate\Support\Str::headline(str_replace('_', ' ', $parte->papel->value)) }}
                                         @unless ($parte->assina_contrato)
-                                            <span class="badge bg-highlight text-dark">não assina</span>
+                                            · não assina
                                         @endunless
                                     </span>
-                                    <form action="{{ route('contrato-partes.destroy', $parte) }}" method="POST"
-                                          onsubmit="return confirm('Remover esta parte do contrato?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
-                                    </form>
-                                </li>
-                            @empty
-                                <li class="list-group-item text-muted mb-0">Nenhuma parte cadastrada ainda.</li>
-                            @endforelse
-                        </ul>
+                                </div>
+                                <form action="{{ route('contrato-partes.destroy', $parte) }}" method="POST"
+                                      onsubmit="return confirm('Remover esta parte do contrato?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-icon delete" title="Remover">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        @empty
+                            <p class="ds-text-muted mb-0">Nenhuma parte cadastrada ainda.</p>
+                        @endforelse
+
+                        <form action="{{ route('contratos.partes.store', $contrato) }}" method="POST" class="row g-2 mt-3 mb-0">
+                            @csrf
+                            <div class="col-md-5">
+                                <select name="pessoa_id" class="form-select @error('pessoa_id') is-invalid @enderror" required>
+                                    <option value="">Selecione a pessoa...</option>
+                                    @foreach (\App\Models\Pessoa::orderBy('nome')->get(['id', 'nome']) as $pessoa)
+                                        <option value="{{ $pessoa->id }}" @selected(old('pessoa_id') == $pessoa->id)>{{ $pessoa->nome }}</option>
+                                    @endforeach
+                                </select>
+                                @error('pessoa_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            </div>
+                            <div class="col-md-4">
+                                <select name="papel" class="form-select" required>
+                                    @foreach (\App\Enums\PapelContrato::cases() as $opcao)
+                                        <option value="{{ $opcao->value }}" @selected(old('papel') === $opcao->value)>
+                                            {{ \Illuminate\Support\Str::headline(str_replace('_', ' ', $opcao->value)) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-center">
+                                <div class="form-check">
+                                    <input type="checkbox" name="assina_contrato" value="1" checked class="form-check-input" id="assina">
+                                    <label class="form-check-label" for="assina">Assina</label>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <button type="submit" class="btn btn-primary w-100" title="Adicionar parte">+</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
 
-            <form action="{{ route('contratos.partes.store', $contrato) }}" method="POST" class="row g-2 mb-4">
-                @csrf
-                <div class="col-md-5">
-                    <select name="pessoa_id" class="form-select @error('pessoa_id') is-invalid @enderror" required>
-                        <option value="">Selecione a pessoa...</option>
-                        @foreach (\App\Models\Pessoa::orderBy('nome')->get(['id', 'nome']) as $pessoa)
-                            <option value="{{ $pessoa->id }}">{{ $pessoa->nome }}</option>
-                        @endforeach
-                    </select>
-                    @error('pessoa_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-                <div class="col-md-4">
-                    <select name="papel" class="form-select" required>
-                        @foreach (\App\Enums\PapelContrato::cases() as $opcao)
-                            <option value="{{ $opcao->value }}">{{ str_replace('_', ' ', $opcao->value) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-2 d-flex align-items-center">
-                    <div class="form-check">
-                        <input type="checkbox" name="assina_contrato" value="1" checked class="form-check-input" id="assina">
-                        <label class="form-check-label" for="assina">Assina</label>
-                    </div>
-                </div>
-                <div class="col-md-1">
-                    <button type="submit" class="btn btn-outline-primary w-100">+</button>
-                </div>
-            </form>
-
-            <div class="ds-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 mb-0">
-                        <i class="fa-solid fa-file-invoice-dollar ds-section-icon"></i>
-                        Faturas
-                    </h2>
-                    <a href="{{ route('faturas.create', ['contrato_id' => $contrato->id]) }}" class="btn btn-sm btn-outline-primary">Nova fatura</a>
-                </div>
-
-                <div class="ds-card">
-                    <div class="ds-card-body">
-                        <ul class="list-group mb-0">
-                            @forelse ($contrato->faturas as $fatura)
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    <a href="{{ route('faturas.show', $fatura) }}">{{ $fatura->referencia->format('m/Y') }}</a>
-                                    @php
-                                        $corFat = match ($fatura->status_pagamento->value) {
-                                            'PAGO' => 'success',
-                                            'PAGO_COM_ATRASO' => 'highlight',
-                                            'ATRASADO' => 'danger',
-                                            'CANCELADO' => 'dark',
-                                            default => 'info',
-                                        };
-                                    @endphp
-                                    <span class="badge bg-{{ $corFat }}">{{ str_replace('_', ' ', $fatura->status_pagamento->value) }}</span>
-                                </li>
-                            @empty
-                                <li class="list-group-item text-muted mb-0">Nenhuma fatura gerada.</li>
-                            @endforelse
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
             @if (in_array($contrato->garantia, [\App\Enums\Garantia::SEGURO_FIANCA, \App\Enums\Garantia::TITULO_CAPITALIZACAO]))
                 <div class="ds-section">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="h5 mb-0">
-                        <i class="fa-solid fa-shield-halved ds-section-icon"></i>
-                        Seguro / Fiança
-                    </h2>
-                    </div>
-
                     <div class="ds-card">
+                        <div class="ds-card-header">
+                            <i class="fa-solid fa-shield-halved ds-section-icon"></i>
+                            Seguro / Fiança
+                        </div>
                         <div class="ds-card-body">
-                            <ul class="list-group mb-3">
-                                @forelse ($contrato->segurosFiancas as $seguro)
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>
+                            @forelse ($contrato->segurosFiancas as $seguro)
+                                <div class="parte-card">
+                                    <div class="parte-avatar">
+                                        <i class="fa-solid fa-shield-halved"></i>
+                                    </div>
+                                    <div class="parte-info">
+                                        <span class="parte-nome">
                                             {{ $seguro->seguradora }} — apólice {{ $seguro->numero_apolice ?? 's/n' }}
-                                            <span class="badge bg-secondary">{{ str_replace('_', ' ', $seguro->status->value) }}</span>
-                                            <div class="small text-muted">vence em {{ $seguro->data_vencimento_apolice->format('d/m/Y') }}</div>
                                         </span>
+                                        <span class="parte-papel">
+                                            Vence em {{ $seguro->data_vencimento_apolice->format('d/m/Y') }}
+                                        </span>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <x-status-badge :status="$seguro->status" />
                                         <form action="{{ route('contrato-seguros.destroy', $seguro) }}" method="POST"
                                               onsubmit="return confirm('Remover esta apólice?');">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
+                                            <button type="submit" class="btn-icon delete" title="Remover">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
                                         </form>
-                                    </li>
-                                @empty
-                                    <li class="list-group-item text-muted mb-0">Nenhuma apólice cadastrada.</li>
-                                @endforelse
-                            </ul>
+                                    </div>
+                                </div>
+                            @empty
+                                <p class="ds-text-muted mb-3">Nenhuma apólice cadastrada.</p>
+                            @endforelse
 
-                            <form action="{{ route('contratos.seguros.store', $contrato) }}" method="POST" class="row g-2">
+                            <form action="{{ route('contratos.seguros.store', $contrato) }}" method="POST" class="row g-2 mt-1 mb-0">
                                 @csrf
                                 <input type="hidden" name="status" value="ATIVO">
                                 <div class="col-md-3">
@@ -254,213 +310,294 @@
                                     <input type="date" name="data_vencimento_apolice" class="form-control" required title="Vencimento da apólice">
                                 </div>
                                 <div class="col-12 mt-2">
-                                    <button type="submit" class="btn btn-outline-primary">Adicionar apólice</button>
+                                    <button type="submit" class="btn btn-primary">Adicionar apólice</button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
             @endif
-        </div>
-    </div>
 
-    {{-- ====================================================================== --}}
-    {{-- SEÇÃO: Documentos — Explorer de arquivos                               --}}
-    {{-- ====================================================================== --}}
-    @php
-        $documentos = $contrato->documentos->sortBy('categoria_armazenamento');
-        $pastas = $documentos->groupBy('categoria_armazenamento');
-    @endphp
+            {{-- ====================================================================== --}}
+            {{-- SEÇÃO: Documentos — Explorer de arquivos                               --}}
+            {{-- ====================================================================== --}}
+            @php
+                $documentos = $contrato->documentos->sortBy('categoria_armazenamento');
+                $pastas = $documentos->groupBy('categoria_armazenamento');
+            @endphp
 
-    <div class="ds-section">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="ds-section-title mb-0">
-                <i class="fa-solid fa-folder-open ds-section-icon"></i>
-                Documentos
-            </h2>
-            <span class="badge bg-light text-dark border">{{ $documentos->count() }} arquivo(s)</span>
-        </div>
+            <div class="ds-section">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="ds-section-title mb-0">
+                        <i class="fa-solid fa-folder-open ds-section-icon"></i>
+                        Documentos
+                    </h2>
+                    <span class="badge bg-light text-dark border">{{ $documentos->count() }} arquivo(s)</span>
+                </div>
 
-        {{-- Formulário de upload --}}
-        <div class="ds-card mb-4 p-2">
-            <div class="ds-card-header d-flex align-items-center gap-2">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                <strong>Enviar novo documento</strong>
-            </div>
-            <div class="ds-card-body">
-                <form action="{{ route('documentos.store') }}" method="POST" enctype="multipart/form-data" id="doc-upload-form">
-                    @csrf
-                    <input type="hidden" name="documentavel_type" value="{{ App\Models\Contrato::class }}">
-                    <input type="hidden" name="documentavel_id" value="{{ $contrato->id }}">
-                    <div class="row g-3 align-items-end">
-                        <div class="col-lg-2 col-md-4">
-                            <label class="ds-label">Pasta de destino</label>
-                            <select name="categoria_armazenamento" class="form-select" required>
-                                <option value="">Selecione...</option>
-                                @foreach (\App\Enums\CategoriaArmazenamento::cases() as $cat)
-                                    <option value="{{ $cat->value }}">{{ $cat->label() }}</option>
-                                @endforeach
-                            </select>
+                {{-- Formulário de upload --}}
+                <div class="ds-card mb-4 p-2">
+                    <div class="ds-card-header d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <strong>Enviar novo documento</strong>
+                    </div>
+                    <div class="ds-card-body">
+                        <form action="{{ route('documentos.store') }}" method="POST" enctype="multipart/form-data" id="doc-upload-form">
+                            @csrf
+                            <input type="hidden" name="documentavel_type" value="{{ App\Models\Contrato::class }}">
+                            <input type="hidden" name="documentavel_id" value="{{ $contrato->id }}">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-lg-2 col-md-4">
+                                    <label class="ds-label">Pasta de destino</label>
+                                    <select name="categoria_armazenamento" class="form-select" required>
+                                        <option value="">Selecione...</option>
+                                        @foreach (\App\Enums\CategoriaArmazenamento::cases() as $cat)
+                                            <option value="{{ $cat->value }}">{{ $cat->label() }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-lg-2 col-md-4">
+                                    <label class="ds-label">Tipo</label>
+                                    <select name="tipo_documento" class="form-select" required>
+                                        <option value="">Selecione...</option>
+                                        @foreach (\App\Enums\TipoDocumento::cases() as $tipo)
+                                            <option value="{{ $tipo->value }}">{{ str_replace('_', ' ', $tipo->value) }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-4">
+                                    <label class="ds-label">Arquivo</label>
+                                    <input type="file" name="arquivo" accept=".pdf,.jpeg,.jpg,.png"
+                                           class="form-control" required id="doc-file-input">
+                                    <div class="form-text">PDF, JPEG ou PNG — max. 10 MB</div>
+                                </div>
+                                <div class="col-lg-3 col-md-6">
+                                    <label class="ds-label">Descricao <span class="text-muted">(opcional)</span></label>
+                                    <input type="text" name="descricao" placeholder="Ex: Contrato assinado em 01/09"
+                                           class="form-control">
+                                </div>
+                                <div class="col-lg-2 col-md-6">
+                                    <button type="submit" class="btn btn-primary w-100" id="doc-upload-btn">
+                                        <span class="btn-text">Enviar</span>
+                                        <span class="btn-loading d-none">
+                                            <span class="spinner-border spinner-border-sm"></span> Enviando...
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="ds-upload-progress d-none mt-3" id="doc-upload-progress">
+                                <div class="ds-progress-bar">
+                                    <div class="ds-progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Explorador de arquivos --}}
+                <div class="ds-card">
+                    {{-- Barra de ferramentas --}}
+                    <div class="ds-toolbar" id="doc-toolbar">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check ds-checkbox mb-0">
+                                <input type="checkbox" id="doc-select-all" class="form-check-input">
+                                <label class="form-check-label" for="doc-select-all">Selecionar todos</label>
+                            </div>
+                            <span class="ds-text-muted small d-none" id="doc-selected-count"></span>
                         </div>
-                        <div class="col-lg-2 col-md-4">
-                            <label class="ds-label">Tipo</label>
-                            <select name="tipo_documento" class="form-select" required>
-                                <option value="">Selecione...</option>
-                                @foreach (\App\Enums\TipoDocumento::cases() as $tipo)
-                                    <option value="{{ $tipo->value }}">{{ str_replace('_', ' ', $tipo->value) }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-lg-3 col-md-4">
-                            <label class="ds-label">Arquivo</label>
-                            <input type="file" name="arquivo" accept=".pdf,.jpeg,.jpg,.png"
-                                   class="form-control" required id="doc-file-input">
-                            <div class="form-text">PDF, JPEG ou PNG — max. 10 MB</div>
-                        </div>
-                        <div class="col-lg-3 col-md-6">
-                            <label class="ds-label">Descricao <span class="text-muted">(opcional)</span></label>
-                            <input type="text" name="descricao" placeholder="Ex: Contrato assinado em 01/09"
-                                   class="form-control">
-                        </div>
-                        <div class="col-lg-2 col-md-6">
-                            <button type="submit" class="btn btn-primary w-100" id="doc-upload-btn">
-                                <span class="btn-text">Enviar</span>
-                                <span class="btn-loading d-none">
-                                    <span class="spinner-border spinner-border-sm"></span> Enviando...
-                                </span>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-success btn-sm" id="btn-download-selected" disabled>
+                                <i class="fa-solid fa-download"></i> Baixar
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btn-remove-selected" disabled>
+                                <i class="fa-solid fa-xmark"></i> Remover
                             </button>
                         </div>
                     </div>
-                    <div class="ds-upload-progress d-none mt-3" id="doc-upload-progress">
-                        <div class="ds-progress-bar">
-                            <div class="ds-progress-fill" style="width: 0%"></div>
+
+                    @if ($documentos->isEmpty())
+                        {{-- Estado vazio --}}
+                        <div class="ds-empty-state">
+                            <div class="ds-empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                            <p class="ds-empty-title">Nenhum documento anexado</p>
+                            <p class="ds-empty-text">Envie o primeiro documento usando o formulario acima.</p>
                         </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        {{-- Explorador de arquivos --}}
-        <div class="ds-card">
-            {{-- Barra de ferramentas --}}
-            <div class="ds-toolbar" id="doc-toolbar">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="form-check ds-checkbox mb-0">
-                        <input type="checkbox" id="doc-select-all" class="form-check-input">
-                        <label class="form-check-label" for="doc-select-all">Selecionar todos</label>
-                    </div>
-                    <span class="ds-text-muted small d-none" id="doc-selected-count"></span>
-                </div>
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-outline-success btn-sm" id="btn-download-selected" disabled>
-                        <i class="fa-solid fa-download"></i> Baixar
-                    </button>
-                    <button type="button" class="btn btn-outline-danger btn-sm" id="btn-remove-selected" disabled>
-                        <i class="fa-solid fa-xmark"></i> Remover
-                    </button>
-                </div>
-            </div>
-
-            @if ($documentos->isEmpty())
-                {{-- Estado vazio --}}
-                <div class="ds-empty-state">
-                    <div class="ds-empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                    <p class="ds-empty-title">Nenhum documento anexado</p>
-                    <p class="ds-empty-text">Envie o primeiro documento usando o formulario acima.</p>
-                </div>
-            @else
-                <div class="ds-explorer">
-                    {{-- Sidebar: arvore de pastas --}}
-                    <div class="ds-explorer-sidebar" id="folder-tree">
-                        <div class="ds-sidebar-header">Pastas</div>
-                        <button type="button"
-                                class="ds-folder-item active"
-                                data-folder="all">
-                            <span class="ds-folder-icon"><i class="fa-solid fa-folder"></i></span>
-                            <span class="ds-folder-name">Todos os documentos</span>
-                            <span class="ds-folder-count">{{ $documentos->count() }}</span>
-                        </button>
-                        @foreach ($pastas as $categoria => $docs)
-                            @if ($categoria)
+                    @else
+                        <div class="ds-explorer">
+                            {{-- Sidebar: arvore de pastas --}}
+                            <div class="ds-explorer-sidebar" id="folder-tree">
+                                <div class="ds-sidebar-header">Pastas</div>
                                 <button type="button"
-                                        class="ds-folder-item"
-                                        data-folder="{{ $categoria }}">
+                                        class="ds-folder-item active"
+                                        data-folder="all">
                                     <span class="ds-folder-icon"><i class="fa-solid fa-folder"></i></span>
-                                    <span class="ds-folder-name">{{ \App\Enums\CategoriaArmazenamento::from($categoria)->label() }}</span>
-                                    <span class="ds-folder-count">{{ $docs->count() }}</span>
+                                    <span class="ds-folder-name">Todos os documentos</span>
+                                    <span class="ds-folder-count">{{ $documentos->count() }}</span>
                                 </button>
-                            @endif
-                        @endforeach
-                    </div>
-
-                    {{-- Lista de arquivos --}}
-                    <div class="ds-explorer-content">
-                        <table class="ds-file-table" id="file-table">
-                            <thead>
-                                <tr>
-                                    <th class="col-check"></th>
-                                    <th class="col-icon"></th>
-                                    <th class="col-name">Nome</th>
-                                    <th class="col-type">Tipo</th>
-                                    <th class="col-size">Tamanho</th>
-                                    <th class="col-actions">Acoes</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($documentos as $doc)
-                                    @php
-                                        $ext = strtoupper(pathinfo($doc->nome_original, PATHINFO_EXTENSION));
-                                        $isPdf = $doc->mime_type === 'application/pdf';
-                                        $isImage = str_starts_with($doc->mime_type ?? '', 'image/');
-                                    @endphp
-                                    <tr class="file-row" data-folder="{{ $doc->categoria_armazenamento }}">
-                                        <td class="text-center">
-                                            <input type="checkbox"
-                                                   class="form-check-input doc-checkbox"
-                                                   value="{{ $doc->id }}"
-                                                   data-url="{{ route('documentos.download', $doc) }}">
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="ds-file-icon {{ $isPdf ? 'ds-file-icon--pdf' : ($isImage ? 'ds-file-icon--image' : 'ds-file-icon--default') }}">
-                                                {{ $isPdf ? 'PDF' : ($isImage ? 'IMG' : $ext) }}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="ds-file-name">{{ $doc->nome_original }}</div>
-                                            @if ($doc->descricao)
-                                                <div class="ds-file-desc">{{ $doc->descricao }}</div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-light text-dark border">{{ $ext }}</span>
-                                        </td>
-                                        <td class="ds-text-muted">
-                                            {{ $doc->tamanho_bytes >= 1048576
-                                                ? number_format($doc->tamanho_bytes / 1048576, 1, ',', '.') . ' MB'
-                                                : number_format($doc->tamanho_bytes / 1024, 0) . ' KB' }}
-                                        </td>
-                                        <td>
-                                            <div class="d-flex gap-1">
-                                                <a href="{{ route('documentos.download', $doc) }}"
-                                                   class="btn btn-sm btn-outline-success"
-                                                   title="Baixar"><i class="fa-solid fa-download"></i></a>
-                                                <form action="{{ route('documentos.destroy', $doc) }}" method="POST"
-                                                      class="d-inline" onsubmit="return confirm('Remover este documento?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                            title="Remover"><i class="fa-solid fa-xmark"></i></button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                @foreach ($pastas as $categoria => $docs)
+                                    @if ($categoria)
+                                        <button type="button"
+                                                class="ds-folder-item"
+                                                data-folder="{{ $categoria }}">
+                                            <span class="ds-folder-icon"><i class="fa-solid fa-folder"></i></span>
+                                            <span class="ds-folder-name">{{ \App\Enums\CategoriaArmazenamento::from($categoria)->label() }}</span>
+                                            <span class="ds-folder-count">{{ $docs->count() }}</span>
+                                        </button>
+                                    @endif
                                 @endforeach
-                            </tbody>
-                        </table>
+                            </div>
+
+                            {{-- Lista de arquivos --}}
+                            <div class="ds-explorer-content">
+                                <table class="ds-file-table" id="file-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-check"></th>
+                                            <th class="col-icon"></th>
+                                            <th class="col-name">Nome</th>
+                                            <th class="col-actions">Acoes</th>
+                                            <th class="col-expand"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($documentos as $doc)
+                                            @php
+                                                $ext = strtoupper(pathinfo($doc->nome_original, PATHINFO_EXTENSION));
+                                                $isPdf = $doc->mime_type === 'application/pdf';
+                                                $isImage = str_starts_with($doc->mime_type ?? '', 'image/');
+                                                $tamanho = $doc->tamanho_bytes >= 1048576
+                                                    ? number_format($doc->tamanho_bytes / 1048576, 1, ',', '.') . ' MB'
+                                                    : number_format($doc->tamanho_bytes / 1024, 0) . ' KB';
+                                            @endphp
+                                            <tr class="file-row" data-folder="{{ $doc->categoria_armazenamento }}">
+                                                <td class="text-center">
+                                                    <input type="checkbox"
+                                                           class="form-check-input doc-checkbox"
+                                                           value="{{ $doc->id }}"
+                                                           data-url="{{ route('documentos.download', $doc) }}">
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="ds-file-icon {{ $isPdf ? 'ds-file-icon--pdf' : ($isImage ? 'ds-file-icon--image' : 'ds-file-icon--default') }}">
+                                                        {{ $isPdf ? 'PDF' : ($isImage ? 'IMG' : $ext) }}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="ds-file-name">{{ $doc->nome_original }}</div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex gap-1">
+                                                        <a href="{{ route('documentos.download', $doc) }}"
+                                                           class="btn btn-sm btn-outline-success"
+                                                           title="Baixar"><i class="fa-solid fa-download"></i></a>
+                                                        <form action="{{ route('documentos.destroy', $doc) }}" method="POST"
+                                                              class="d-inline" onsubmit="return confirm('Remover este documento?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                                    title="Remover"><i class="fa-solid fa-xmark"></i></button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button class="btn-icon expand" type="button"
+                                                            data-bs-toggle="collapse" data-bs-target="#doc-detalhes-{{ $doc->id }}"
+                                                            aria-expanded="false" title="Detalhes">
+                                                        <i class="fa-solid fa-chevron-down"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="collapse details-row doc-details-row"
+                                                id="doc-detalhes-{{ $doc->id }}"
+                                                data-folder="{{ $doc->categoria_armazenamento }}">
+                                                <td colspan="5">
+                                                    <div class="list-details">
+                                                        <div class="list-details__grid">
+                                                            <span class="list-details__item">
+                                                                <i class="fa-solid fa-weight-hanging"></i>
+                                                                Tamanho: <strong>{{ $tamanho }}</strong>
+                                                            </span>
+                                                            <span class="list-details__item">
+                                                                <i class="fa-solid fa-align-left"></i>
+                                                                Descrição: <strong>{{ $doc->descricao ?: 'Sem descrição' }}</strong>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <aside class="detail-sidebar">
+            <div class="finance-card">
+                <div class="ds-section-title">
+                    <i class="fa-solid fa-calculator ds-section-icon"></i>
+                    Resumo financeiro
+                </div>
+                <div class="finance-list">
+                    <div class="finance-row">
+                        <span>Aluguel</span>
+                        <strong>R$ {{ number_format($contrato->valor_aluguel, 2, ',', '.') }}</strong>
+                    </div>
+                    <div class="finance-row">
+                        <span>Condomínio</span>
+                        <strong>R$ {{ number_format($contrato->valor_condominio, 2, ',', '.') }}</strong>
+                    </div>
+                    <div class="finance-row">
+                        <span>IPTU</span>
+                        <strong>R$ {{ number_format($contrato->valor_iptu, 2, ',', '.') }}</strong>
+                    </div>
+                    <div class="finance-row">
+                        <span>Seguro</span>
+                        <strong>R$ {{ number_format($contrato->valor_seguro, 2, ',', '.') }}</strong>
+                    </div>
+                    <div class="finance-total">
+                        <span>Total mensal</span>
+                        <strong>R$ {{ number_format($valorTotal, 2, ',', '.') }}</strong>
                     </div>
                 </div>
-            @endif
-        </div>
+                <div class="finance-meta">
+                    <div class="finance-row">
+                        <span>Taxa de administração</span>
+                        <strong>{{ $contrato->taxa_adm_percentual }}%</strong>
+                    </div>
+                    <div class="finance-row">
+                        <span>Multa por atraso</span>
+                        <strong>{{ $contrato->multa_percentual }}%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ds-card">
+                <div class="ds-card-header d-flex justify-content-between align-items-center">
+                    <span>
+                        <i class="fa-solid fa-file-invoice-dollar ds-section-icon"></i>
+                        Faturas
+                    </span>
+                    <a href="{{ route('faturas.create', ['contrato_id' => $contrato->id]) }}" class="btn btn-sm btn-primary">
+                        Nova fatura
+                    </a>
+                </div>
+                <div class="ds-card-body">
+                    @forelse ($contrato->faturas as $fatura)
+                        <div class="fatura-list-item">
+                            <a href="{{ route('faturas.show', $fatura) }}" class="fatura-competencia">
+                                {{ $fatura->referencia->format('m/Y') }}
+                            </a>
+                            <x-status-badge :status="$fatura->status_pagamento" />
+                        </div>
+                    @empty
+                        <p class="ds-text-muted mb-0">Nenhuma fatura gerada.</p>
+                    @endforelse
+                </div>
+            </div>
+        </aside>
     </div>
 
     <script>
@@ -472,6 +609,7 @@
         const btnRemove = document.getElementById('btn-remove-selected');
         const folderItems = document.querySelectorAll('.ds-folder-item');
         const fileRows = document.querySelectorAll('.file-row');
+        const detailRows = document.querySelectorAll('.doc-details-row');
         const uploadForm = document.getElementById('doc-upload-form');
         const uploadBtn = document.getElementById('doc-upload-btn');
 
@@ -519,6 +657,9 @@
 
                 const folder = this.dataset.folder;
                 fileRows.forEach(row => {
+                    row.style.display = (folder === 'all' || row.dataset.folder === folder) ? '' : 'none';
+                });
+                detailRows.forEach(row => {
                     row.style.display = (folder === 'all' || row.dataset.folder === folder) ? '' : 'none';
                 });
 

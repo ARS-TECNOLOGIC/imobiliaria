@@ -39,9 +39,9 @@ class DocumentoController extends Controller
 
         // Monta o caminho: locacoes/{codigo}/{pasta}/{nome_final}
         $nomeArquivo = time().'_'.$arquivo->getClientOriginalName();
-        $caminho = "locacoes/{$codigoEntidade}/{$categoria->pasta()}/{$nomeArquivo}";
+        $pasta = "locacoes/{$codigoEntidade}/{$categoria->pasta()}";
 
-        $arquivo->store($caminho, 'privada');
+        $caminho = $arquivo->storeAs($pasta, $nomeArquivo, 'privada');
 
         $documento = Documento::create([
             'documentavel_type' => $documentavelType,

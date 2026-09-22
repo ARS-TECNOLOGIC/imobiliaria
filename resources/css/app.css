@@ -8,39 +8,7 @@
    ========================================================================== */
 
 /* ==========================================================================
-   0. BRAND TOKENS — Contratos /全局 brand palette
-   ========================================================================== */
-:root {
-  --brand: #0891B2;
-  --brand-dark: #0E7490;
-  --brand-soft: #E4F3F9;
-  --brand-soft-border: #BFE3EE;
-
-  --ink: #0F1F4D;
-  --text: #33415C;
-  --muted: #6B7A90;
-  --placeholder: #8A98AD;
-
-  --page-bg: #F4F8FB;
-  --card-bg: #FFFFFF;
-  --thead-bg: #EEF3F8;
-  --row-border: #E3EAF2;
-
-  --row-highlight: #E9F5FA;
-  --input-border: #D5DEE8;
-
-  --success-bg: #D7F5E0;
-  --success-text: #1E9E4A;
-  --danger: #E53935;
-  --danger-bg: #FDECEC;
-  --danger-border: #F8CACA;
-
-  --neutral-btn-bg: #F1F5F9;
-  --neutral-btn-border: #D9E2EC;
-}
-
-/* ==========================================================================
-   1. DESIGN TOKENS — Efí Empresas Visual Identity
+   1. DESIGN TOKENS — Visual Identity
    ========================================================================== */
 :root {
   /* Colors — Core */
@@ -83,6 +51,26 @@
   /* Badge — pendente */
   --pendente-bg: #FFF4D6;
   --pendente-text: #B7791F;
+
+  /* Badge — pago */
+  --pago-bg: #ecfdf5;
+  --pago-text: #166534;
+  --pago-dot: #22B24C;
+
+  /* Badge — pago com atraso */
+  --pago-atraso-bg: #fef3ec;
+  --pago-atraso-text: #c2410c;
+  --pago-atraso-dot: #F37021;
+
+  /* Badge — atrasado */
+  --atrasado-bg: #fef2f2;
+  --atrasado-text: #dc2626;
+  --atrasado-dot: #dc2626;
+
+  /* Badge — suspenso */
+  --suspenso-bg: #edf6f9;
+  --suspenso-text: #0369a1;
+  --suspenso-dot: #70B9D0;
 
   /* Danger buttons */
   --danger-bg: #fef2f2;
@@ -200,59 +188,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   3. NAVBAR OVERRIDES
-   ========================================================================== */
-.navbar {
-  background-color: var(--color-primary) !important;
-  padding: 0.75rem 0;
-  box-shadow: var(--shadow-md);
-}
-
-.navbar-brand {
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-lg);
-  letter-spacing: -0.01em;
-  color: #ffffff !important;
-}
-
-.brand-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  background-color: var(--color-highlight);
-  color: #ffffff;
-  border-radius: var(--radius-md);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.03em;
-}
-
-.nav-link {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  opacity: 0.8;
-  color: #ffffff !important;
-  transition: opacity var(--transition-fast);
-}
-
-.nav-link:hover,
-.nav-link.active {
-  opacity: 1;
-  color: #ffffff !important;
-}
-
-.navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.navbar-toggler-icon {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.8%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-}
-
-/* ==========================================================================
-   4. CARD OVERRIDES
+   3. CARD OVERRIDES
    ========================================================================== */
 .card {
   border: 1px solid var(--color-border);
@@ -281,7 +217,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   5. BUTTON OVERRIDES
+    4. BUTTON OVERRIDES
    ========================================================================== */
 .btn {
   border-radius: var(--radius-md);
@@ -369,7 +305,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   6. TABLE OVERRIDES (Bootstrap defaults)
+    5. TABLE OVERRIDES (Bootstrap defaults)
    ========================================================================== */
 .table {
   font-size: var(--font-size-sm);
@@ -401,7 +337,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   7. FORM OVERRIDES
+    6. FORM OVERRIDES
    ========================================================================== */
 .form-control,
 .form-select {
@@ -428,6 +364,12 @@ a:hover {
   font-weight: var(--font-weight-medium);
   font-size: var(--font-size-sm);
   color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.form-label-sm {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-1);
 }
 
@@ -480,7 +422,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   8. BADGE OVERRIDES
+    7. BADGE OVERRIDES
    ========================================================================== */
 .badge {
   font-weight: var(--font-weight-medium);
@@ -522,18 +464,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   8b. PESSOA TRUNCATE
-   ========================================================================== */
-.pessoa-truncate {
-  display: inline-block;
-  max-width: 180px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ==========================================================================
-   9. ALERT OVERRIDES
+   8. ALERT OVERRIDES
    ========================================================================== */
 .alert {
   border-radius: var(--radius-lg);
@@ -567,33 +498,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   10. LIST GROUP OVERRIDES
-   ========================================================================== */
-.list-group-item {
-  border-color: var(--color-border);
-  font-size: var(--font-size-sm);
-  padding: var(--space-3) var(--space-4);
-  color: var(--color-text);
-}
-
-.list-group-item.active {
-  background-color: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #ffffff;
-}
-
-.list-group-item-action:hover {
-  background-color: var(--color-accent-light);
-  color: var(--color-text);
-}
-
-.list-group-item-action:focus-visible {
-  background-color: var(--color-accent-light);
-  color: var(--color-text);
-}
-
-/* ==========================================================================
-   11. PAGINATION OVERRIDES
+   9. PAGINATION OVERRIDES
    ========================================================================== */
 .page-link {
   border-radius: var(--radius-md);
@@ -624,7 +529,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   12. CUSTOM COMPONENTS
+    10. CUSTOM COMPONENTS
    ========================================================================== */
 
 /* --- Page Header --- */
@@ -680,6 +585,10 @@ a:hover {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xs);
   overflow: hidden;
+}
+
+.ds-card-body {
+  padding: var(--space-6);
 }
 
 .ds-card-body dl {
@@ -743,17 +652,6 @@ a:hover {
   margin-left: var(--space-2);
 }
 
-/* --- File Icon --- */
-.ds-file-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--radius-md);
-  font-size: 1.1rem;
-}
-
 /* --- Folder Tree --- */
 .ds-folder-tree {
   max-height: 400px;
@@ -809,59 +707,147 @@ a:hover {
   gap: var(--space-2);
 }
 
-/* ==========================================================================
-   13. UTILITY CLASSES
-   ========================================================================== */
-.ds-text-primary {
+/* --- Page Header Row (index views) --- */
+.ds-page-header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: var(--space-6);
+}
+
+.ds-page-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-lg);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.ds-page-icon--brand {
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-soft-border);
+  color: var(--brand);
+}
+
+.ds-page-icon--success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.ds-page-icon--ink {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--ink);
+}
+
+.ds-page-icon--warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.ds-page-info {
+  min-width: 0;
+}
+
+.ds-page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.ds-page-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  margin: var(--space-1) 0 0;
+}
+
+/* --- Search form wrapper --- */
+.ds-search .input-group {
+  max-width: 480px;
+}
+
+/* --- Contratos show: section title, card header, upload, empty states --- */
+.ds-section-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+}
+
+.ds-card-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
   color: var(--color-text);
 }
 
-.ds-text-secondary {
-  color: var(--color-text-secondary);
+.ds-upload-progress {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.ds-progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+.btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.btn-text {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.doc-checkbox {
+  cursor: pointer;
+}
+
+.file-row {
+  transition: background-color var(--transition-fast);
+}
+
+.ds-empty-icon {
+  font-size: 3rem;
+  opacity: 0.3;
+  margin-bottom: var(--space-4);
+  display: block;
+  color: var(--muted);
+}
+
+.ds-empty-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.ds-empty-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
 }
 
 .ds-text-muted {
   color: var(--color-text-muted);
 }
 
-.ds-text-accent {
-  color: var(--color-accent);
-}
-
-.ds-text-success {
-  color: var(--color-success);
-}
-
-.ds-text-danger {
-  color: var(--color-danger);
-}
-
-.ds-bg-surface {
-  background-color: var(--color-surface);
-}
-
-.ds-bg-accent {
-  background-color: var(--color-accent);
-}
-
-.ds-border {
-  border: 1px solid var(--color-border);
-}
-
-.ds-rounded {
-  border-radius: var(--radius-lg);
-}
-
-.ds-shadow {
-  box-shadow: var(--shadow-sm);
-}
-
-.ds-transition {
-  transition: all var(--transition-base);
-}
-
 /* ==========================================================================
-   14. TABLE LISTING — Compact table for all entities
+   11. TABLE LISTING — Compact table for all entities
    ========================================================================== */
 
 /* --- Table wrapper --- */
@@ -910,136 +896,6 @@ a:hover {
   white-space: nowrap;
 }
 
-.cell-imovel {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--ink);
-}
-
-.cell-imovel .icon-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: #E1F3F9;
-  border: 1px solid #B8E0EC;
-  color: var(--brand);
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
-.cell-imovel .imovel-codigo {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-
-.cell-pessoa {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  font-size: 14px;
-  color: var(--text);
-  min-width: 0;
-}
-
-.cell-pessoa i {
-  color: var(--muted);
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.cell-pessoa .pessoa-nome {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.cell-valores {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 8px;
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.cell-valores .valor-label {
-  color: var(--muted);
-}
-
-.cell-valores .valor-valor {
-  color: var(--text);
-  font-weight: 500;
-  text-align: right;
-}
-
-.cell-total {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--ink);
-  white-space: nowrap;
-}
-
-/* --- Contratos table: column proportions --- */
-.table-contratos {
-  table-layout:auto;
-  width:fit-content;
-}
-
-.table-contratos colgroup .col-id,
-.table-contratos colgroup .col-imovel,
-.table-contratos colgroup .col-total,
-.table-contratos colgroup .col-status,
-.table-contratos colgroup .col-acoes {
-  width: 1px;
-  white-space: nowrap;
-}
-
-.table-contratos colgroup .col-locador,
-.table-contratos colgroup .col-locatario {
-  width: 1px;
-  overflow: hidden;
-}
-
-.table-contratos tbody td {
-  min-width: 0;
-}
-
-.table-contratos .cell-total {
-  font-size: 13px;
-  white-space: nowrap;
-}
-
-.table-contratos .acoes-cell {
-  gap: 3px;
-}
-
-.table-contratos .btn-icon {
-  width: 30px;
-  height: 30px;
-  font-size: 12px;
-  border-radius: 8px;
-}
-
-.table-contratos .pessoa-nome {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  width:190px;
-}
-
-.table-contratos td {
-  min-width: 0;
-}
-
 .cell-text {
   font-size: 13px;
   color: var(--text);
@@ -1054,33 +910,6 @@ a:hover {
   color: var(--muted);
 }
 
-/* --- Badge status --- */
-.badge-status {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-  border-radius: var(--radius-full);
-  padding: 6px 14px;
-  white-space: nowrap;
-}
-
-.badge-status i { font-size: 8px; }
-
-.badge-status.ativo { background: var(--success-bg); color: var(--success-text); }
-.badge-status.ativo i { color: #22B24C; }
-.badge-status.encerrado { background: #E9EDF2; color: #5B6B85; }
-.badge-status.encerrado i { color: #5B6B85; }
-.badge-status.suspenso { background: #FFF4D6; color: #B7791F; }
-.badge-status.suspenso i { color: #D69E2E; }
-.badge-status.pago { background: var(--success-bg); color: var(--success-text); }
-.badge-status.pendente { background: #FFF4D6; color: #B7791F; }
-.badge-status.atrasado { background: var(--danger-bg); color: var(--danger); }
-.badge-status.pago-com-atraso { background: #FEF3E2; color: #C2410C; }
-.badge-status.cancelado { background: #E9EDF2; color: #5B6B85; }
-
 /* --- Actions cell --- */
 .col-acoes { white-space: nowrap; }
 
@@ -1093,32 +922,6 @@ a:hover {
 }
 
 .acoes-cell form { display: contents; }
-
-.btn-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid var(--neutral-btn-border);
-  background: var(--neutral-btn-bg);
-  color: var(--muted);
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.btn-icon:hover { background: var(--row-highlight); }
-.btn-icon.expand { color: var(--muted); }
-.btn-icon.expand[aria-expanded="true"] { background: var(--brand-soft); border-color: var(--brand-soft-border); color: var(--brand); }
-.btn-icon.view:hover { background: var(--brand-soft); border-color: var(--brand-soft-border); color: var(--brand); }
-.btn-icon.edit { background: var(--brand-soft); border-color: var(--brand-soft-border); color: var(--brand); }
-.btn-icon.edit:hover { background: #D9EAF4; }
-.btn-icon.delete { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger); }
-.btn-icon.delete:hover { background: #FDE8E8; }
 
 /* --- Expandable details panel --- */
 .list-details {
@@ -1170,7 +973,7 @@ a:hover {
 }
 
 /* ==========================================================================
-   14. FILE EXPLORER COMPONENT
+    12. FILE EXPLORER COMPONENT
    ========================================================================== */
 .ds-explorer {
   display: flex;
@@ -1284,9 +1087,14 @@ a:hover {
 
 .ds-file-table .col-check { width: 40px; text-align: center; }
 .ds-file-table .col-icon { width: 48px; text-align: center; }
-.ds-file-table .col-type { width: 80px; }
-.ds-file-table .col-size { width: 90px; }
 .ds-file-table .col-actions { width: 90px; }
+.ds-file-table .col-expand { width: 40px; text-align: center; }
+
+.ds-file-table .details-row td {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
 
 .ds-file-icon {
   display: inline-flex;
@@ -1335,8 +1143,61 @@ a:hover {
 }
 
 /* ==========================================================================
-    15. CONTRATOS — PAGE HEADER, SEARCH, LIST, ROWS
+    13. CONTRATOS — PAGE HEADER, SEARCH, LIST, ROWS
     ========================================================================== */
+
+/* --- Contratos table: column proportions --- */
+.table-contratos {
+  table-layout: auto;
+  
+}
+
+.table-contratos colgroup .col-id,
+.table-contratos colgroup .col-imovel,
+.table-contratos colgroup .col-total,
+.table-contratos colgroup .col-status,
+.table-contratos colgroup .col-acoes {
+  width: 1px;
+  white-space: nowrap;
+}
+
+.table-contratos colgroup .col-locador,
+.table-contratos colgroup .col-locatario {
+  width: 1px;
+  overflow: hidden;
+}
+
+.table-contratos tbody td {
+  min-width: 0;
+}
+
+.table-contratos .cell-total {
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.table-contratos .acoes-cell {
+  gap: 3px;
+}
+
+.table-contratos .btn-icon {
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.table-contratos .pessoa-nome {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  width: 190px;
+}
+
+.table-contratos td {
+  min-width: 0;
+}
 
 /* --- Page Header --- */
 .page-header {
@@ -1550,6 +1411,15 @@ a:hover {
   font-size: 14px;
 }
 
+.imovel-codigo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  color: var(--ink);
+  min-width: 0;
+}
+
 .cell-pessoa {
   display: flex;
   gap: 8px;
@@ -1563,6 +1433,13 @@ a:hover {
   color: var(--muted);
   flex-shrink: 0;
   font-size: var(--font-size-sm);
+}
+
+.pessoa-nome {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .cell-pessoa-text {
@@ -1591,9 +1468,9 @@ a:hover {
 
 .cell-total {
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--ink);
-  text-align: right;
+  text-align: left;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1603,10 +1480,10 @@ a:hover {
   gap: 6px;
   align-items: center;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   border-radius: 999px;
-  padding: 6px 14px;
+  padding: 4px 10px;
   letter-spacing: 0.03em;
 }
 
@@ -1639,6 +1516,51 @@ a:hover {
 
 .badge-status.pendente i {
   color: var(--pendente-text);
+}
+
+.badge-status.pago {
+  background: var(--pago-bg);
+  color: var(--pago-text);
+}
+
+.badge-status.pago i {
+  color: var(--pago-dot);
+}
+
+.badge-status.pago-com-atraso {
+  background: var(--pago-atraso-bg);
+  color: var(--pago-atraso-text);
+}
+
+.badge-status.pago-com-atraso i {
+  color: var(--pago-atraso-dot);
+}
+
+.badge-status.atrasado {
+  background: var(--atrasado-bg);
+  color: var(--atrasado-text);
+}
+
+.badge-status.atrasado i {
+  color: var(--atrasado-dot);
+}
+
+.badge-status.cancelado {
+  background: var(--encerrado-bg);
+  color: var(--encerrado-text);
+}
+
+.badge-status.cancelado i {
+  color: var(--encerrado-text);
+}
+
+.badge-status.suspenso {
+  background: var(--suspenso-bg);
+  color: var(--suspenso-text);
+}
+
+.badge-status.suspenso i {
+  color: var(--suspenso-dot);
 }
 
 /* --- Actions --- */
@@ -1691,6 +1613,37 @@ a:hover {
   border-color: #f5c2c2;
 }
 
+.btn-icon.view {
+  background: var(--color-info-light);
+  border-color: #b8d9ea;
+  color: var(--color-info);
+}
+
+.btn-icon.view:hover {
+  background: #d6eaf5;
+  border-color: var(--color-info);
+  color: var(--color-info);
+}
+
+.btn-icon.expand {
+  background: var(--color-bg);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+.btn-icon.expand:hover {
+  background: var(--color-border);
+  color: var(--ink);
+}
+
+.btn-icon.expand i {
+  transition: transform var(--transition-fast);
+}
+
+.btn-icon.expand[aria-expanded="true"] i {
+  transform: rotate(180deg);
+}
+
 /* --- Empty State --- */
 .empty-state {
   text-align: center;
@@ -1722,7 +1675,7 @@ a:hover {
 }
 
 /* ==========================================================================
-    16. RESPONSIVE
+    14. RESPONSIVE
     ========================================================================== */
 @media (max-width: 768px) {
   .ds-page-header {
@@ -1802,11 +1755,6 @@ a:hover {
     flex: 0 0 auto;
   }
 
-  .ds-file-table .col-type,
-  .ds-file-table .col-size {
-    display: none;
-  }
-
   .ds-file-table thead th,
   .ds-file-table tbody td {
     padding: var(--space-2) var(--space-3);
@@ -1867,14 +1815,6 @@ a:hover {
 }
 
 @media (max-width: 576px) {
-  .navbar-brand {
-    font-size: var(--font-size-base);
-  }
-
-  .nav-link {
-    font-size: var(--font-size-xs);
-  }
-
   .page-link {
     padding: 0.25rem 0.5rem;
     font-size: var(--font-size-xs);
@@ -2201,5 +2141,306 @@ a:hover {
 
   .shell-main {
     margin-left: 0;
+  }
+}
+
+/* ==========================================================================
+   16. CONTRATO — SHOW PAGE
+   ========================================================================== */
+
+/* --- Header --- */
+.detail-header-info {
+  min-width: 0;
+}
+
+.detail-header-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.2;
+  flex-wrap: wrap;
+}
+
+.detail-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+  margin: var(--space-1) 0 0;
+}
+
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+/* --- Outline buttons --- */
+.btn-outline-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: transparent;
+  color: var(--brand);
+  border: 1px solid var(--brand-soft-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-outline-brand:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand);
+  color: var(--brand-dark);
+}
+
+.btn-outline-neutral {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--neutral-btn-bg);
+  color: var(--muted);
+  border: 1px solid var(--neutral-btn-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-outline-neutral:hover {
+  background: var(--row-border);
+  border-color: var(--row-border);
+  color: var(--ink);
+}
+
+/* --- Layout --- */
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.detail-main {
+  min-width: 0;
+}
+
+.detail-sidebar {
+  min-width: 0;
+  position: sticky;
+  top: calc(var(--shell-topbar-h) + var(--space-6));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* --- Info grid --- */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-6);
+}
+
+.info-item {
+  min-width: 0;
+}
+
+.info-item-body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.info-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.info-value {
+  font-size: var(--font-size-sm);
+  color: var(--ink);
+  word-break: break-word;
+}
+
+/* --- Finance card --- */
+.finance-card {
+  background: var(--card-bg);
+  border: 1px solid var(--row-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  padding: var(--space-5);
+}
+
+.finance-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.finance-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--muted);
+}
+
+.finance-row strong {
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--row-border);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.finance-total strong {
+  font-size: var(--font-size-lg);
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.finance-meta {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--row-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.finance-meta .finance-row {
+  font-size: var(--font-size-xs);
+}
+
+/* --- Partes --- */
+.parte-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--row-border);
+  border-radius: var(--radius-md);
+  background: var(--card-bg);
+  margin-bottom: var(--space-2);
+}
+
+.parte-card form {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.parte-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-soft-border);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+}
+
+.parte-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.parte-nome {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.parte-papel {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+/* --- Faturas (sidebar) --- */
+.fatura-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--row-border);
+}
+
+.fatura-list-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.fatura-list-item:first-child {
+  padding-top: 0;
+}
+
+.fatura-competencia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--brand);
+  text-decoration: none;
+}
+
+.fatura-competencia:hover {
+  color: var(--brand-dark);
+}
+
+/* --- Responsive: stack layout --- */
+@media (max-width: 991.98px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-sidebar {
+    position: static;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
   }
 }
