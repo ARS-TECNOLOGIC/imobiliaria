@@ -24,6 +24,10 @@ class DatabaseSeeder extends Seeder
 
         // $this->call(SistemaLocacaoSeeder::class);
         $this->call(FeriadosSeeder::class);
+        $this->call(ConfiguracaoSeeder::class);
+        $this->call(PastaDocumentoSeeder::class);
+        $this->call(ModeloEmailSeeder::class);
+        $this->call(AssinaturaEmailSeeder::class);
         $this->call(SistemaLocacaoSeeder::class); // mantenha na ordem: feriados antes
     }
 }

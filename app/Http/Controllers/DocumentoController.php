@@ -7,10 +7,12 @@ use App\Models\Contrato;
 use App\Models\Documento;
 use App\Models\Fatura;
 use App\Models\Imovel;
+use App\Models\PastaDocumento;
 use App\Models\Pessoa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -18,10 +20,16 @@ class DocumentoController extends Controller
 {
     public function store(Request $request): RedirectResponse
     {
+        $pastasExtras = PastaDocumento::ativas()->pluck('slug')->all();
+        $valoresValidos = array_merge(
+            array_column(CategoriaArmazenamento::cases(), 'value'),
+            $pastasExtras
+        );
+
         $request->validate([
             'documentavel_type' => ['required', 'string', Rule::in([Pessoa::class, Imovel::class, Contrato::class, Fatura::class])],
             'documentavel_id' => ['required', 'integer'],
-            'categoria_armazenamento' => ['required', Rule::enum(CategoriaArmazenamento::class)],
+            'categoria_armazenamento' => ['required', Rule::in($valoresValidos)],
             'tipo_documento' => ['required', 'string', 'max:255'],
             'arquivo' => ['required', 'file', 'max:10240', 'mimes:pdf,jpeg,jpg,png'],
             'descricao' => ['nullable', 'string', 'max:255'],
@@ -29,7 +37,7 @@ class DocumentoController extends Controller
 
         $documentavelType = $request->input('documentavel_type');
         $documentavelId = $request->integer('documentavel_id');
-        $categoria = CategoriaArmazenamento::from($request->input('categoria_armazenamento'));
+        $categoriaValor = $request->input('categoria_armazenamento');
 
         // Verifica se a entidade existe
         $documentavelType::findOrFail($documentavelId);
@@ -37,9 +45,17 @@ class DocumentoController extends Controller
         $arquivo = $request->file('arquivo');
         $codigoEntidade = $this->obterCodigoEntidade($documentavelType, $documentavelId);
 
+        // Tenta criar enum; se falhar, usa o valor raw (pasta extra)
+        try {
+            $categoria = CategoriaArmazenamento::from($categoriaValor);
+            $pastaSlug = $categoria->pasta();
+        } catch (\ValueError) {
+            $pastaSlug = Str::slug($categoriaValor);
+        }
+
         // Monta o caminho: locacoes/{codigo}/{pasta}/{nome_final}
         $nomeArquivo = time().'_'.$arquivo->getClientOriginalName();
-        $pasta = "locacoes/{$codigoEntidade}/{$categoria->pasta()}";
+        $pasta = "locacoes/{$codigoEntidade}/{$pastaSlug}";
 
         $caminho = $arquivo->storeAs($pasta, $nomeArquivo, 'privada');
 
@@ -47,7 +63,7 @@ class DocumentoController extends Controller
             'documentavel_type' => $documentavelType,
             'documentavel_id' => $documentavelId,
             'tipo_documento' => $request->input('tipo_documento'),
-            'categoria_armazenamento' => $categoria->value,
+            'categoria_armazenamento' => $categoriaValor,
             'nome_original' => $arquivo->getClientOriginalName(),
             'caminho_arquivo' => $caminho,
             'mime_type' => $arquivo->getMimeType(),

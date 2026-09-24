@@ -18,6 +18,15 @@
 
             return mb_strtoupper($primeira . $ultima);
         };
+
+        // Helper para label da pasta (suporta enum + pastas extras do config)
+        $labelPasta = function (string $valor): string {
+            try {
+                return \App\Enums\CategoriaArmazenamento::from($valor)->label();
+            } catch (\ValueError) {
+                return ucfirst(str_replace('-', ' ', $valor));
+            }
+        };
     @endphp
 
     <div class="page-header">
@@ -346,13 +355,20 @@
                             @csrf
                             <input type="hidden" name="documentavel_type" value="{{ App\Models\Contrato::class }}">
                             <input type="hidden" name="documentavel_id" value="{{ $contrato->id }}">
+                            @php
+                                $pastasExtras = \App\Models\PastaDocumento::ativas()->ordenadas()->get();
+                                $todasPastas = collect(\App\Enums\CategoriaArmazenamento::cases())
+                                    ->mapWithKeys(fn($c) => [$c->value => $c->label()])
+                                    ->merge($pastasExtras->mapWithKeys(fn($p) => [$p->slug => $p->nome]))
+                                    ->all();
+                            @endphp
                             <div class="row g-3 align-items-end">
                                 <div class="col-lg-2 col-md-4">
                                     <label class="ds-label">Pasta de destino</label>
                                     <select name="categoria_armazenamento" class="form-select" required>
                                         <option value="">Selecione...</option>
-                                        @foreach (\App\Enums\CategoriaArmazenamento::cases() as $cat)
-                                            <option value="{{ $cat->value }}">{{ $cat->label() }}</option>
+                                        @foreach ($todasPastas as $valor => $label)
+                                            <option value="{{ $valor }}">{{ $label }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -440,7 +456,7 @@
                                                 class="ds-folder-item"
                                                 data-folder="{{ $categoria }}">
                                             <span class="ds-folder-icon"><i class="fa-solid fa-folder"></i></span>
-                                            <span class="ds-folder-name">{{ \App\Enums\CategoriaArmazenamento::from($categoria)->label() }}</span>
+                                            <span class="ds-folder-name">{{ $labelPasta($categoria) }}</span>
                                             <span class="ds-folder-count">{{ $docs->count() }}</span>
                                         </button>
                                     @endif

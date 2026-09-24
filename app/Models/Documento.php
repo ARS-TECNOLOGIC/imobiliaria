@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\CategoriaArmazenamento;
 use App\Enums\TipoDocumento;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +21,6 @@ class Documento extends Model
 
     protected $casts = [
         'tipo_documento' => TipoDocumento::class,
-        'categoria_armazenamento' => CategoriaArmazenamento::class,
     ];
 
     public function documentavel(): MorphTo

@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class GeradoraFaturasMensais
 {
-    public function __construct(private CalculadoraRepasse $calculadoraRepasse) {}
+    public function __construct(
+        private CalculadoraRepasse $calculadoraRepasse,
+        private CalculadoraIptu $calculadoraIptu,
+    ) {}
 
     public function gerar(Carbon $referencia): int
     {
@@ -28,7 +31,20 @@ class GeradoraFaturasMensais
                     return;
                 }
 
-                $fatura = DB::transaction(function () use ($contrato, $referencia, $vencimento) {
+                $mesReferencia = (int) $referencia->format('m');
+                $valorIptu = 0;
+                $parcelaIptu = null;
+
+                if ($this->calculadoraIptu->deveAplicarGlobalmente() && $this->calculadoraIptu->mesTemIptu($mesReferencia)) {
+                    $valorIptu = $contrato->valor_iptu;
+                    $parcelas = $this->calculadoraIptu->getParcelasAno((int) $referencia->format('Y'));
+                    $indice = array_search($mesReferencia, $parcelas, true);
+                    if ($indice !== false) {
+                        $parcelaIptu = sprintf('%02d/%02d', $indice + 1, count($parcelas));
+                    }
+                }
+
+                $fatura = DB::transaction(function () use ($contrato, $referencia, $vencimento, $valorIptu, $parcelaIptu) {
                     $fatura = $contrato->faturas()->firstOrCreate(
                         ['referencia' => $referencia->toDateString()],
                         [
@@ -37,8 +53,8 @@ class GeradoraFaturasMensais
                             'valor_condominio' => $contrato->imovel->possui_condominio
                                 ? $contrato->valor_condominio
                                 : 0,
-                            'valor_iptu' => $contrato->valor_iptu,
-                            'parcela_iptu' => $contrato->parcela_iptu,
+                            'valor_iptu' => $valorIptu,
+                            'parcela_iptu' => $parcelaIptu,
                             'valor_seguro' => $contrato->valor_seguro,
                             'valor_taxa_extra' => 0,
                             'valor_desconto' => 0,

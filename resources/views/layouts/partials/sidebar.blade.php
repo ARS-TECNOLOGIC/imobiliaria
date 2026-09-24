@@ -20,6 +20,11 @@
             <i class="fa-solid fa-file-invoice shell-sidebar__icon"></i>
             <span>Faturas</span>
         </a>
+        <a href="{{ route('configuracoes.index') }}"
+           class="shell-sidebar__item {{ request()->routeIs('configuracoes.*') ? 'active' : '' }}">
+            <i class="fa-solid fa-gear shell-sidebar__icon"></i>
+            <span>Configura&ccedil;&otilde;es</span>
+        </a>
     </nav>
     <div class="shell-sidebar__footer">
         <span>Sistema de Loca&ccedil;&atilde;o</span>

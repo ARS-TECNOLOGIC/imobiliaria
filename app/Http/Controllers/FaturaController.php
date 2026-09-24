@@ -8,6 +8,7 @@ use App\Http\Requests\FaturaRequest;
 use App\Models\Contrato;
 use App\Models\Fatura;
 use App\Services\CalculadoraDiasUteis;
+use App\Services\CalculadoraIptu;
 use App\Services\CalculadoraRepasse;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +20,7 @@ class FaturaController extends Controller
     public function __construct(
         private CalculadoraDiasUteis $diasUteis,
         private CalculadoraRepasse $calculadoraRepasse,
+        private CalculadoraIptu $calculadoraIptu,
     ) {}
 
     public function index(Request $request): View
@@ -54,7 +56,13 @@ class FaturaController extends Controller
             ? Contrato::with('imovel')->find($request->integer('contrato_id'))
             : null;
 
-        return view('faturas.create', compact('contratos', 'contratoSelecionado'));
+        $iptuConfig = [
+            'aplicar_globalmente' => $this->calculadoraIptu->deveAplicarGlobalmente(),
+            'mes_inicio' => (int) configuracao('iptu_mes_inicio', 3),
+            'qtd_parcelas' => (int) configuracao('iptu_qtd_parcelas', 10),
+        ];
+
+        return view('faturas.create', compact('contratos', 'contratoSelecionado', 'iptuConfig'));
     }
 
     public function store(FaturaRequest $request): RedirectResponse
@@ -93,7 +101,13 @@ class FaturaController extends Controller
     {
         $contratos = Contrato::with('imovel')->orderByDesc('id')->get();
 
-        return view('faturas.edit', compact('fatura', 'contratos'));
+        $iptuConfig = [
+            'aplicar_globalmente' => $this->calculadoraIptu->deveAplicarGlobalmente(),
+            'mes_inicio' => (int) configuracao('iptu_mes_inicio', 3),
+            'qtd_parcelas' => (int) configuracao('iptu_qtd_parcelas', 10),
+        ];
+
+        return view('faturas.edit', compact('fatura', 'contratos', 'iptuConfig'));
     }
 
     public function update(FaturaRequest $request, Fatura $fatura): RedirectResponse

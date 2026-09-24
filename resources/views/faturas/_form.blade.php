@@ -13,6 +13,13 @@
         ? $contratoSelecionado->valor_condominio
         : 0;
 
+    // Configuração global de IPTU (para o JS decidir se sugere valor ou 0)
+    $iptuConfig = $iptuConfig ?? [
+        'aplicar_globalmente' => configuracao('iptu_aplicar_globalmente', true),
+        'mes_inicio' => (int) configuracao('iptu_mes_inicio', 3),
+        'qtd_parcelas' => (int) configuracao('iptu_qtd_parcelas', 10),
+    ];
+
     // Dados para sugerir valores conforme o contrato e recalcular a prévia de
     // multa, total e valor pago em tempo real, respeitando os feriados.
     $contratosInfo = $contratos->mapWithKeys(fn ($c) => [
@@ -187,6 +194,7 @@
     // grava no banco é sempre recalculado pelo backend ao salvar.
     const contratosInfo = @json($contratosInfo);
     const feriados = new Set(@json($feriados));
+    const iptuConfig = @json($iptuConfig);
 
     const $ = (id) => document.getElementById(id);
 
@@ -262,9 +270,35 @@
 
         $('valor_aluguel').value = contrato.valor_aluguel;
         $('valor_condominio').value = contrato.valor_condominio;
-        $('valor_iptu').value = contrato.valor_iptu;
-        $('parcela_iptu').value = contrato.parcela_iptu ?? '';
         $('valor_seguro').value = contrato.valor_seguro;
+
+        // IPTU: verifica configuração global e mês de referência
+        const referenciaMes = $('referencia_mes').value;
+        let valorIptu = 0;
+        let parcelaIptu = '';
+
+        if (referenciaMes && iptuConfig.aplicar_globalmente) {
+            const [ano, mes] = referenciaMes.split('-').map(Number);
+            const inicio = iptuConfig.mes_inicio;
+            const qtd = iptuConfig.qtd_parcelas;
+            const fim = Math.min(12, inicio + qtd - 1);
+
+            if (mes >= inicio && mes <= fim) {
+                valorIptu = contrato.valor_iptu;
+                const parcelas = Array.from({ length: qtd }, (_, i) => inicio + i);
+                const indice = parcelas.indexOf(mes);
+                if (indice !== -1) {
+                    parcelaIptu = String(indice + 1).padStart(2, '0') + '/' + String(qtd).padStart(2, '0');
+                }
+            }
+        } else if (referenciaMes) {
+            // Configuração global desligada: usa valor do contrato
+            valorIptu = contrato.valor_iptu;
+            parcelaIptu = contrato.parcela_iptu ?? '';
+        }
+
+        $('valor_iptu').value = valorIptu;
+        $('parcela_iptu').value = parcelaIptu;
         recalcular();
     }
 
@@ -320,7 +354,10 @@
         preencherValoresDoContrato();
         calcularVencimento();
     });
-    $('referencia_mes')?.addEventListener('change', calcularVencimento);
+    $('referencia_mes')?.addEventListener('change', () => {
+        preencherValoresDoContrato();
+        calcularVencimento();
+    });
     calcularVencimento();
     recalcular();
 })();
